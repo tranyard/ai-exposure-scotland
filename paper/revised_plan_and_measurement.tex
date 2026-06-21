@@ -1,0 +1,235 @@
+% =====================================================================
+%  Revised Project Plan and Exposure Measurement Treatment
+%  Scotland vs. rUK AI Exposure Decomposition
+%  MSc Economics Dissertation -- in collaboration with the SFC
+%
+%  This file mirrors the preamble of main-2.tex but uses only widely
+%  available packages so that it compiles standalone. To fold it into
+%  the dissertation, copy the body (between \begin{document} ... start of
+%  Section 1 and \bibliography) into main-2.tex; the theorem environments,
+%  section formatting and natbib calls are already consistent with it.
+%  Citation keys are placeholders -- reconcile against your references.bib.
+% =====================================================================
+
+\documentclass[a4paper,12pt,fleqn]{article}
+
+\usepackage[parfill]{parskip}
+\usepackage[hang,small,bf]{caption}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amsthm,amssymb,bm,mathtools}
+\usepackage[expansion=false]{microtype}
+\usepackage[onehalfspacing]{setspace}
+\usepackage{booktabs,threeparttable,array,multirow}
+\usepackage{enumitem}
+\usepackage[margin=1.1in,footskip=0.7in]{geometry}
+\usepackage{titlesec}
+
+%% Bibliography
+\usepackage{natbib}
+\setcitestyle{authoryear}
+\bibliographystyle{plainnat}   % project uses agsm; swap back when merging
+
+%% Headings to match main-2.tex
+\titleformat*{\section}{\centering\large\bfseries}
+\titleformat*{\subsection}{\bfseries}
+\titlelabel{\thetitle.\quad}
+
+%% Theorems & proofs (as in main-2.tex)
+\newtheoremstyle{paper}{}{}{\itshape}{}{\scshape}{.}{.5em}{}
+\theoremstyle{paper}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{assumption}{Assumption}
+\newtheorem{remark}{Remark}
+\renewcommand{\proofname}{\upshape\scshape Proof}
+
+\newcommand{\Scot}{\mathrm{Scot}}
+\newcommand{\rUK}{\mathrm{rUK}}
+\newcommand{\Exp}{\mathrm{Exp}}
+
+\title{Revised Project Plan and Exposure Measurement Treatment\\[4pt]
+\large Scotland versus the Rest of the UK in the AI Age}
+\author{Tommy Ranyard\thanks{MSc Economics, in collaboration with the Scottish Fiscal Commission. This note supersedes the wage-centred design following the loss of independent ASHE access, and sets aside the Generalisability-Theory extension on grounds of scope.}}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\noindent\textbf{Status.} This note formalises the design I am now proceeding with. It does two things. First, it fixes the empirical core of the dissertation around the data I can be certain of---the Annual Population Survey (APS)---so that the project stands irrespective of whether ASHE access is restored through the sponsor. Second, it develops the exposure measurement treatment in full, reframed so that a single language-model score is read as one realisation from a specified model rather than as a draw towards an unknowable consensus value. The headline measurement result is that the Scotland--rUK exposure \emph{differential} nets out the dominant, common-mode component of model error by construction, and is therefore defensible even where the absolute exposure \emph{levels} are not. I retain the classical, within-model error model throughout and do not pursue Generalisability Theory, for reasons of scope set out below.
+
+\section{The Empirical Core}
+
+The centre of gravity of this dissertation is the labour-market empirics, not the scoring machinery. I therefore fix here the components that depend only on data I already hold, and flag separately the single component---the wage regression---that is contingent on ASHE. The exposure scores enter this core as a measurement input; their construction and the honest treatment of their error are deferred to Section~2.
+
+\paragraph{What is locked and what is conditional} The locked core comprises the region-level exposure indices, the Scotland--rUK shift-share decomposition, the employment regressions at occupation and industry level, and the Acemoglu-calibrated productivity and GDP projection. Each of these is feasible with the APS employment data and the O*NET--LLM exposure scores alone. The wage regression, and with it the errors-in-variables correction of Section~2.9, is conditional on the sponsor extending ASHE access under their Data Access Agreement. I design the core so that its loss costs the dissertation a robustness exercise rather than its spine.
+
+\subsection{The exposure index as an input}
+
+I take as given the occupation-level exposure score $E_j\in[0,100]$ for each O*NET-SOC occupation $j$, constructed as the importance-weighted mean of task-level scores $s_{j,t}=\max(s^{\mathrm{sub}}_{j,t},s^{\mathrm{comp}}_{j,t})$ over the tasks $t\in\mathcal{T}_j$, and the chained crosswalk that maps $E_j$ onto a continuous UK SOC 2020 score $E^{\mathrm{UK}}_k$ for unit group $k$.\footnote{The crosswalk runs O*NET-SOC $\to$ US SOC 2018 $\to$ UK SOC 2020, with the working level set at the 3-digit minor group so that Scottish APS cells remain populated when three waves are pooled. The full construction is documented in the technical framework and is unchanged here.} The classification rule assigns each $k$ to \{Substituted, Complemented, Unexposed\} via the OBR thresholds \citep{obr2025} $(\theta^{\mathrm{sub}},\theta^{\mathrm{comp}})=(70,40)$. Crucially, these scores carry no regional variation: the same $E^{\mathrm{UK}}_k$ applies to Scotland and to the rUK, since task content within an occupation does not differ by region in the data. This fact does substantial work below.
+
+\subsection{Region indices and the shift-share decomposition}
+
+For region $r\in\{\Scot,\rUK\}$ with pooled APS employment shares $\sigma_{k,r}=l^{\mathrm{pool}}_{k,r}/\sum_{k'}l^{\mathrm{pool}}_{k',r}$, the aggregate exposed-employment share is
+\begin{equation}
+\hat{E}_r=\sum_k \sigma_{k,r}\,\mathbf{1}\!\left[\mathrm{Classification}(k)\in\{\mathrm{Sub},\mathrm{Comp}\}\right],
+\qquad
+\bar{E}_r=\sum_k \sigma_{k,r}\,\frac{E^{\mathrm{UK}}_k}{100}\in[0,1],
+\label{eq:index}
+\end{equation}
+where $\hat E_r$ is the headline classified share and $\bar E_r$ the continuous index used in the calibration. The object of interest for the SFC is the gap $\Delta\hat E=\hat E_{\Scot}-\hat E_{\rUK}$ (and its continuous analogue $\Delta\bar E$). The standard shift-share decomposition is
+\begin{equation}
+\Delta\hat E
+=\underbrace{\sum_k\!\left(\sigma_{k,\Scot}-\sigma_{k,\rUK}\right)\mathbf{1}[\Exp(k)]_{\rUK}}_{\text{composition effect}}
++\underbrace{\sum_k \sigma_{k,\rUK}\!\left(\mathbf{1}[\Exp(k)]_{\Scot}-\mathbf{1}[\Exp(k)]_{\rUK}\right)}_{\text{within-occupation effect}}.
+\label{eq:shiftshare}
+\end{equation}
+
+Because the same scores apply to both regions, $\mathbf{1}[\Exp(k)]_{\Scot}=\mathbf{1}[\Exp(k)]_{\rUK}$ for every $k$, and the within-occupation effect is exactly zero by construction. The entirety of $\Delta\hat E$ is therefore compositional. I read this not as a limitation but as a substantive finding: any Scotland--rUK exposure gap is attributable to Scotland's distinctive occupational mix---more public administration and caring services, fewer professional and financial services---rather than to any regional difference in the AI-task content of given occupations.\footnote{Recovering a non-zero within-occupation effect would require region-specific O*NET-analogue task data for the UK, which does not exist. I flag this explicitly rather than letting the zero stand unexplained.} This compositional structure is also what makes the measurement result of Section~2.5 work, since it is the same $\sum_k(\sigma_{k,\Scot}-\sigma_{k,\rUK})$ weighting that annihilates common-mode model error.
+
+\subsection{Employment regressions at occupation and industry level}
+
+With the wage regression off the certain path, the employment regressions carry the reduced-form weight. They ask whether Scotland's workforce is differentially concentrated in high-exposure work, conditional on broad sector. This is the shift-share's composition effect expressed as an estimable gradient, with employment-weighted standard errors.
+
+\paragraph{Occupation level} Stacking occupation $\times$ region cells $(k,r)$, I estimate
+\begin{equation}
+y_{k,r}=\alpha+\beta\,\bar E_k+\delta\,\Scot_r+\zeta\,\big(\bar E_k\times \Scot_r\big)+\phi_{s(k)}+u_{k,r},
+\label{eq:occreg}
+\end{equation}
+weighted by cell employment $l^{\mathrm{pool}}_{k,r}$, where $y_{k,r}$ is log occupational employment (and, in a second specification, the within-region employment share $\sigma_{k,r}$), $\Scot_r$ is the Scotland indicator, $\phi_{s(k)}$ are 1-digit SOC major-group fixed effects, and standard errors are clustered at the occupation level. The coefficient of interest is $\zeta$: it measures whether, within sector, employment loads differentially onto high-exposure occupations in Scotland relative to the rUK. A negative $\zeta$ would indicate that Scotland's workforce is comparatively insulated by composition; a positive $\zeta$, comparatively concentrated in exposed work. Since $\bar E_k$ does not vary by region, $\zeta$ is identified purely from the interaction with the regional employment distribution, which is exactly the quantity the SFC cares about.\footnote{The cross-section identifies association, not displacement. Pooling 2022--2024 APS waves permits a complementary first-difference specification in which $\Delta\log l_{k,r}$ is regressed on $\bar E_k\times\Scot_r$, moving the design from levels towards short-run employment dynamics. I report this as a secondary result. A Poisson pseudo-maximum-likelihood form of \eqref{eq:occreg} on raw counts is the natural alternative where empty cells arise.}
+
+\paragraph{Industry level} Aggregating to 1-digit SOC major group $s$ (and, where the SIC-based APS tabulation permits, to industry division), define the sector exposure rate
+\begin{equation}
+\hat E_{r,s}=\frac{\sum_{k\in\mathcal{K}_s} l_{k,r}\,\mathbf{1}[\Exp(k)]}{\sum_{k\in\mathcal{K}_s} l_{k,r}},
+\end{equation}
+which replicates the OBR's sectoral chart for Scotland and the rUK separately. I then estimate the industry analogue of \eqref{eq:occreg} across sector $\times$ region cells, weighted by sector employment. With far fewer cells this is descriptive rather than precisely estimated, and I present it as such; its value is in locating \emph{which} sectors drive the aggregate differential, which is directly useful to the sponsor's fiscal translation.
+
+\subsection{Acemoglu-calibrated productivity and GDP projection}
+
+Following the OBR's adaptation \citep{obr2026} of \citet{acemoglu2024macroAI}, I treat the aggregate productivity gain from AI as the exposed task share scaled by an average net cost saving. In the task-based form, the proportional total-factor-productivity gain for region $r$ over the horizon is approximately
+\begin{equation}
+\Delta\ln \mathrm{TFP}_r \;\approx\; \kappa\sum_k \sigma_{k,r}\,\pi_k\,\bar E_k,
+\label{eq:acemoglu}
+\end{equation}
+where $\pi_k$ is the task-cost share of occupation $k$ and $\kappa$ is the calibrated average cost saving on exposed tasks. I do not estimate $\kappa$ or the horizon parameters; I import them from the OBR/Acemoglu calibration so that the Scotland and rUK projections differ only through their employment-weighted exposure $\sum_k\sigma_{k,r}\pi_k\bar E_k$.\footnote{This is deliberate. The contribution of this section is the regional \emph{differential} in the productivity and GDP path implied by composition, not a reassessment of Acemoglu's headline magnitude, which is contested and outside the scope of an MSc dissertation. I state the imported parameters and their source explicitly, and report the GDP path as a band reflecting the OBR's own parameter range.} The regional GDP-per-worker differential then follows from \eqref{eq:acemoglu} under the SFC's standard fiscal pass-through, giving the sponsor a Scotland-specific figure that is transparently a function of the exposure differential rather than of any separately assumed Scottish technology.
+
+\subsection{Conditional component: the wage regression}
+
+Should ASHE access be restored, the worker-level wage regression
+\begin{equation}
+\ln w_{i,t}=\alpha+\beta_1 E_{j(i)}+\beta_2\Scot_i+\beta_3\big(E_{j(i)}\times\Scot_i\big)+\gamma X_{i,t}+\delta_s+\delta_t+\varepsilon_{i,t}
+\label{eq:wage}
+\end{equation}
+re-enters as the second empirical pillar, with $\beta_3$ recovering the Scotland-specific exposure--wage gradient. This specification is subject to attenuation from scoring error, which I correct in Section~2.9. Until access is confirmed I treat \eqref{eq:wage} as a conditional module and do not build the dissertation's argument upon it.
+
+\section{The Updated Exposure Measurement Treatment}
+
+I now develop the measurement side in full. The previous draft treated a score as a noisy draw towards a latent consensus value obtained by averaging over all valid prompt specifications. The recent evidence---\citet{yin2026} in particular---shows this interpretation is untenable, since model-specific bias does not average out and the sign of downstream results can reverse across annotators. I therefore reframe the estimand, isolate the component of error that the dissertation's question is actually exposed to, and show that it is the benign one.
+
+\subsection{Reframing the estimand}
+
+I redefine the target of a single scoring run as model-conditional. Fix a model $M$, a frozen prompt and decoding configuration, and the O*NET task text as the operational definition of the occupation. The quantity a run estimates is then $\theta^{M}_{j}$: the exposure of occupation $j$ \emph{as assessed by model $M$ under that configuration}, not an unknowable cross-model truth. This is the reading my supervisor proposed, and it is the honest one: I answer how sensitive the results are to noise in what a specified model says, and treat divergence \emph{between} models as a separate, characterised object rather than as error around a consensus I cannot observe.
+
+\begin{remark}
+This reframing is what makes a classical error model legitimate again. Within a fixed model and configuration, the residual variation across prompt rewordings, criterion orderings and horizons is plausibly mean-zero about $\theta^{M}_j$; the systematic, non-averaging component identified by \citet{yin2026} is precisely the cross-model shift, which I remove from the estimand by conditioning on $M$. I therefore retain the classical machinery for the within-model problem and decline Generalisability Theory: done properly it is close to a separate project, its assumptions in this setting are unestablished, and the within-model classical treatment delivers the same defensible intervals at a fraction of the scope risk.
+\end{remark}
+
+\subsection{Decomposing the scoring error}
+
+Write the observed score for occupation $j$ from a single run of model $M$ as
+\begin{equation}
+s_j = \theta^{\star}_j + b^{M}_j + \varepsilon_j,
+\qquad
+\varepsilon_j\sim\mathcal{N}\!\big(0,\sigma^2_{g(j)}\big),
+\label{eq:decomp}
+\end{equation}
+where $\theta^{\star}_j$ is the (unobserved) consensus exposure, $b^{M}_j$ is the model-specific bias---the systematic, non-averaging tendency of $M$ to over- or under-score occupation $j$---and $\varepsilon_j$ is the within-model framing noise, indexed by the major group $g(j)$. The two error terms have very different characters. The within-model noise $\varepsilon_j$ is the classical, mean-zero part that averaging and Monte Carlo propagation handle correctly. The cross-model bias $b^{M}_j$ is the part \citet{yin2026} warn does not wash out; it shifts the \emph{level} of every absolute exposure figure. The whole of the strategy below is to quantify the first directly and to show that the second is annihilated in the differential the SFC actually asks about.
+
+\subsection{The within-model measurement-error model}
+
+Conditioning on $M$ and absorbing $b^M_j$ into the (model-conditional) target, the operative model is the classical one,
+\begin{equation}
+s_j=\theta^{M}_j+\varepsilon_j,\qquad \varepsilon_j\sim\mathcal{N}\big(0,\sigma^2_{g(j)}\big),
+\end{equation}
+with group-level noise variance $\sigma^2_{g(j)}$ estimated from the calibration experiment of Section~2.4. For boundary-adjacent scores ($s_j<15$ or $s_j>85$) I replace the normal with a logit-normal on $\theta^M_j/100$; I verify that fewer than ten per cent of occupations fall in this range, so the normal approximation suffices for the primary analysis and the logit-normal is relegated to a robustness check.
+
+\subsection{Calibration design and variance estimation}
+
+I estimate the within-model noise from a small, stratified experiment rather than imposing a functional form, since whether scoring variance rises or falls with the volume of online discourse is itself an empirical question. I draw $N=90$ O*NET-SOC occupations, stratified across the ten 1-digit SOC major groups and, within each, across hypothesised information-environment types, oversampling occupations whose baseline scores sit near the thresholds $\theta^{\mathrm{sub}}=70$ and $\theta^{\mathrm{comp}}=40$ where misclassification risk is greatest. Each occupation is scored under $K=5$ deliberately varied conditions:
+\begin{center}\footnotesize
+\begin{tabular}{@{}lll@{}}
+\toprule
+Variant & What changes & Component identified\\
+\midrule
+V0 & Baseline prompt, 10-year horizon, model $M$ & reference (within-model)\\
+V1 & 5-year horizon, else identical & within-model: horizon\\
+V2 & Criteria in reverse order & within-model: anchoring/order\\
+V3 & Single composite score, no sub/comp split & within-model: framing\\
+V4 & Alternative model $M'$ & cross-model: $b^{M}_j-b^{M'}_j$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The within-model variance is estimated from V0--V3 only, which is the key change from the earlier design:
+\begin{equation}
+\hat\sigma^2_j=\frac{1}{K_w-1}\sum_{k=0}^{K_w-1}\big(s^{(k)}_j-\bar s_j\big)^2,
+\qquad
+\hat\sigma^2_g=\frac{1}{|\mathcal{J}_g|}\sum_{j\in\mathcal{J}_g}\hat\sigma^2_j,
+\label{eq:varest}
+\end{equation}
+over the within-model variants $k\in\{\text{V0},\dots,\text{V3}\}$. The cross-model variant V4 is \emph{not} pooled into $\hat\sigma^2_g$; instead it identifies $b^{M}_j-b^{M'}_j$ directly and feeds the cross-model robustness check of Section~2.5. The full experiment is 450 calls at under five pounds in API credit.\footnote{Separating V0--V3 from V4 corrects the conflation flagged in the earlier draft, where across-variant variance mixed framing noise with model choice. The clean split is what lets me propagate the benign component as uncertainty while handling the malign component as a level shift.}
+
+\subsection{The common-mode cancellation result}
+
+The central measurement claim is that the cross-model bias, which contaminates every absolute exposure level, drops out of the Scotland--rUK differential. Let the model-$M$ continuous UK-level score be $E^{M}_k=E^{\star}_k+b^{M}_k$, and recall the continuous region index $\bar E^{M}_r=\sum_k\sigma_{k,r}E^{M}_k/100$ from \eqref{eq:index}.
+
+\begin{proposition}[Common-mode cancellation]\label{prop:cmc}
+The model-induced error in the differential $\Delta\bar E^{M}=\bar E^{M}_{\Scot}-\bar E^{M}_{\rUK}$ is
+\begin{equation}
+\Delta\bar E^{M}-\Delta\bar E^{\star}
+=\frac{1}{100}\sum_k\big(\sigma_{k,\Scot}-\sigma_{k,\rUK}\big)\,b^{M}_k .
+\label{eq:cmc}
+\end{equation}
+Hence (i) if $b^{M}_k=b^{M}$ for all $k$, a pure occupation-invariant level shift, then $\Delta\bar E^{M}=\Delta\bar E^{\star}$ exactly; and (ii) in general the differential is contaminated only by the part of the model bias that co-varies with Scotland's distinctive occupational mix, with the mean bias removed by construction.
+\end{proposition}
+
+\begin{proof}
+Substituting $E^{M}_k=E^{\star}_k+b^{M}_k$ into $\bar E^{M}_r$ gives $\bar E^{M}_r=\bar E^{\star}_r+\tfrac{1}{100}\sum_k\sigma_{k,r}b^{M}_k$. Differencing across regions yields \eqref{eq:cmc}. Writing $\Delta\sigma_k=\sigma_{k,\Scot}-\sigma_{k,\rUK}$ and noting $\sum_k\sigma_{k,r}=1$ for each $r$, so that $\sum_k\Delta\sigma_k=0$, the right-hand side equals $\tfrac{1}{100}\sum_k\Delta\sigma_k\,(b^{M}_k-\bar b^{M})$ for any constant $\bar b^{M}$. Setting $b^{M}_k=b^{M}$ makes this zero, proving (i); the general expression is the claimed bias--composition covariance, proving (ii).
+\end{proof}
+
+The force of Proposition~\ref{prop:cmc} is best seen against the levels. The absolute index $\bar E^{M}_r$ is contaminated by $\tfrac{1}{100}\sum_k\sigma_{k,r}b^{M}_k$, of the order of the \emph{mean} model bias $\bar b^{M}$; this is exactly the three-fold cross-model divergence in levels that \citet{yin2026} document. The differential removes that mean component entirely and retains only its interaction with the cross-region employment-share gap $\Delta\sigma_k$. Therefore the same compositional weighting that drives the within-occupation effect of \eqref{eq:shiftshare} to zero also annihilates the common-mode bias: the differential is robust precisely where the levels are fragile.
+
+\begin{corollary}[Testable implication]\label{cor:test}
+For any two models $M,M'$, $\Delta\bar E^{M}-\Delta\bar E^{M'}=\tfrac{1}{100}\sum_k\Delta\sigma_k\,(b^{M}_k-b^{M'}_k)$, which is zero under level-shift bias and small when cross-model bias differences are weakly correlated with $\Delta\sigma_k$. The differential should thus be markedly more stable across models than the levels.
+\end{corollary}
+
+I test Corollary~\ref{cor:test} directly by re-scoring the full task set on the second model $M'$ (the production-scale counterpart of variant V4) and comparing the cross-model stability of $\Delta\bar E$ against that of $\hat E_{\Scot}$ and $\hat E_{\rUK}$ individually. If the levels move substantially while the gap holds, the dissertation's central regional claim survives the very critique that undermines the absolute figures---which is the honest and most defensible position to take to the sponsor.
+
+\subsection{Monte Carlo propagation of within-model noise}
+
+The within-model noise is propagated to the aggregates by simulation. For each of $R=1{,}000$ draws I perturb every occupation score, $s^{(r)}_j\sim\mathcal{N}(s_j,\hat\sigma^2_{g(j)})$ truncated to $[0,100]$, re-apply the crosswalk weights and classification thresholds, re-weight by APS employment, and record $\hat E^{(r)}_{\Scot}$, $\hat E^{(r)}_{\rUK}$ and $\Delta\hat E^{(r)}$. I report point estimates from the baseline run alongside the Monte Carlo mean, standard deviation, 2.5th and 97.5th percentiles, and the share of draws for which $\Delta\hat E^{(r)}$ keeps the sign of the point estimate. The inferential rule is simple: if the 95\% credible interval for $\Delta\hat E$ excludes zero, the gap is robust to within-model scoring noise; if it includes zero, the gap is directionally suggestive but not robust, which is itself an interpretable and honest finding. As a robustness check I allow intra-group correlated errors, $\varepsilon^{(r)}_g\sim\mathcal{N}\big(0,\hat\sigma^2_g[(1-\rho)I+\rho\mathbf{1}\mathbf{1}^{\top}]\big)$ for $\rho\in\{0,0.2,0.4\}$, since positively correlated within-group errors would otherwise lead the independent-draw procedure to understate aggregate uncertainty.
+
+\subsection{Classification stability and where cancellation is only approximate}
+
+Proposition~\ref{prop:cmc} is exact for the continuous index $\bar E$; for the classified share $\hat E$ it holds only approximately, because the indicator $\mathbf{1}[E^{M}_k\ge\theta]$ is non-linear at the threshold. A level shift therefore fails to cancel exactly only for occupations whose score crosses a threshold under the shift. These are precisely the occupations flagged by a low classification-stability score,
+\begin{equation}
+\mathrm{CSS}_j=\Phi\!\left(\frac{|s_j-\theta^{\ast}_j|}{\hat\sigma_{g(j)}}\right),
+\end{equation}
+where $\theta^{\ast}_j$ is the nearest threshold. I report occupations with $\mathrm{CSS}_j<0.75$ as classification-uncertain in the data appendix. This unifies the two halves of the treatment: the CSS metric identifies exactly the occupations where the common-mode argument weakens, and where the continuous-index results should be trusted over the classified ones.
+
+\subsection{Engagement with Yin et al. (2026)}
+
+I do not dispute \citet{yin2026}; I adopt their finding and locate the dissertation on the safe side of it. They show that average exposure scores diverge by more than a factor of three across models and that difference-in-differences magnitudes vary roughly 2.4-fold across annotators, because each model carries its own systematic bias that no amount of averaging removes. My response is twofold. First, I concede the absolute Scotland and rUK levels are model-dependent and report them only with that caveat. Second, I show via Proposition~\ref{prop:cmc} that the quantity of policy interest---the within-UK differential---nets out the common-mode component that drives their divergence, and I verify the implied cross-model stability empirically through Corollary~\ref{cor:test}. The contribution is thus to identify which estimands survive the \citet{yin2026} critique and which do not, and to show that the SFC's question falls in the former class.
+
+\subsection{Conditional component: errors-in-variables correction}
+
+If the wage regression \eqref{eq:wage} is reinstated, the continuous exposure regressor is measured with within-model error of variance $\sigma^2_u=\hat\sigma^2_{g(j)}/10^4$, attenuating the OLS coefficient by the reliability complement $\lambda=\sigma^2_u/\mathrm{Var}(E_j)$. I report the corrected estimate $\hat\beta^{\mathrm{EIV}}_1=\hat\beta^{\mathrm{OLS}}_1/(1-\hat\lambda)$ with delta-method standard errors, treating the correction on the interaction $\beta_3$ as approximate. I flag this module as contingent and place no weight on it in the core argument until ASHE access is confirmed.
+
+\subsection{Reporting and framing of the contribution}
+
+I will present the measurement treatment as a positive methodological contribution rather than as a defensive patch. Existing LLM-based exposure measures, the OBR's \citep{obr2025} included and consistent with \citet{eloundou2024gpts}, report point estimates without characterising their sensitivity to model and prompt. This dissertation quantifies within-model scoring variance from a low-cost calibration experiment, propagates it into credible intervals for the Scotland--rUK gap, and establishes---both analytically and empirically---that the regional differential is robust to the cross-model bias that renders absolute levels unreliable. To the best of my knowledge this is the first systematic uncertainty quantification of LLM-based AI exposure scores in the UK regional context, and it is calibrated to serve the sponsor's question rather than to displace it.
+
+\paragraph{Order of implementation} I proceed in the following order: (1) finalise and freeze the baseline prompt and decoding configuration; (2) run the $N=90$ calibration experiment and estimate $\hat\sigma^2_g$ from V0--V3; (3) score the full O*NET task set on the baseline model and re-score on the second model for Corollary~\ref{cor:test}; (4) build the APS region indices, shift-share and employment regressions; (5) run the Monte Carlo propagation and compute CSS$_j$; (6) calibrate the Acemoglu productivity and GDP projection; and (7) reinstate the wage regression and EIV correction if and when ASHE access is granted.
+
+\bibliography{references}
+
+\end{document}

@@ -1,0 +1,30 @@
+# ---- Data (large, licensed, or generated — never commit) ----
+data/
+
+# ---- Intermediate pipeline outputs (scores, caches) ----
+out/
+
+# ---- R / system artefacts ----
+.Rhistory
+.Rproj.user/
+.RData
+.Renv
+*.rds
+
+# ---- LaTeX build artefacts ----
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex*
+*.fdb_latexmk
+*.fls
+
+# ---- OS junk ----
+.DS_Store
+Thumbs.db
+
+# ---- API keys (safety net) ----
+.env
+.Renviron
