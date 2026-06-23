@@ -1,5 +1,5 @@
 # =====================================================================
-# 02_prompt.R  —  Frozen scoring prompt + variant generators (Plan §2.1, §2.4).
+# 02_prompt.R  —  Frozen scoring prompt + variant generators
 # The baseline prompt is hashed (SHA-256) so the run is near-deterministic
 # and the exact wording is auditable. Variants V0-V4 implement the
 # calibration design; V0-V3 are within-model, V4 is cross-model.
@@ -45,7 +45,7 @@ source(here::here("R", "00_config.R"))
     "Your task is to evaluate the extent to which a specific occupational task -- as defined in the O*NET occupational database -- ",
     "will be affected by artificial intelligence systems within the next ", horizon,
     " years (i.e., by approximately ", year, ").\n\n",
-    "When assessing AI capabilities, assume continued progress at approximately the pace observed between 2020 and 2024: ",
+    "When assessing AI capabilities, assume continued progress at approximately the pace observed between 2020 and 2025: ",
     "frontier large language models, multimodal AI systems, robotic automation, and AI-powered decision tools are all in scope. ",
     "Do not assume science-fiction-level capabilities beyond this trajectory.\n\n",
     scoring_block, "\n",
@@ -61,8 +61,7 @@ source(here::here("R", "00_config.R"))
          "\nScore this task for AI exposure within the horizon stated above.")
 }
 
-# --- Variant registry -------------------------------------------------
-# Each variant returns the system message and a flag for parsing mode.
+
 variant_spec <- function(variant, model = MODELS$M) {
   stopifnot(variant %in% CALIB$variants)
   switch(variant,
@@ -79,7 +78,7 @@ variant_spec <- function(variant, model = MODELS$M) {
   )
 }
 
-# --- Frozen baseline hash (record in the methods section) -------------
+# --- Frozen baseline hash
 PROMPT_BASELINE_SYSTEM <- .system_template(SCORING$horizon_years_baseline)
 PROMPT_HASH <- digest(PROMPT_BASELINE_SYSTEM, algo = "sha256")
 message("baseline prompt SHA-256: ", PROMPT_HASH)
