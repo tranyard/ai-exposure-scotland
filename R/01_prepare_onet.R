@@ -1,8 +1,8 @@
 # =====================================================================
-# 01_prepare_onet.R  —  Build the task dataset (Plan §1.1).
+# 01_prepare_onet.R  —  Build the task dataset
 # Loads O*NET v29, filters to Importance ratings, drops suppressed tasks,
-# attaches occupation titles. Output: ~19,500 task-occupation pairs.
-# =====================================================================
+# attaches occupation titles
+
 source(here::here("R", "00_config.R"))
 suppressPackageStartupMessages(library(readxl))
 
@@ -11,7 +11,7 @@ f_tasks   <- require_file(file.path(PATHS$onet, "Task Statements.xlsx"),
 f_ratings <- require_file(file.path(PATHS$onet, "Task Ratings.xlsx"))
 f_occ     <- require_file(file.path(PATHS$onet, "Occupation Data.xlsx"))
 
-# --- Standardise column names (O*NET ships spaced headers) ------------
+# --- Standardise column names
 clean_names <- function(df) {
   names(df) <- names(df) |>
     str_replace_all("\\*", "") |>
@@ -26,7 +26,7 @@ tasks   <- read_excel(f_tasks)   |> clean_names()
 ratings <- read_excel(f_ratings) |> clean_names()
 occ     <- read_excel(f_occ)     |> clean_names()
 
-# Expected key columns (rename defensively to a canonical schema).
+# Expected key columns
 ren <- function(df, map) {
   for (nm in names(map)) if (map[[nm]] %in% names(df)) df <- rename(df, !!nm := !!map[[nm]])
   df
@@ -38,7 +38,7 @@ ratings <- ren(ratings, c(onet_soc_code = "onetsoc_code", task_id = "task_id",
                           recommend_suppress = "recommend_suppress"))
 occ     <- ren(occ,     c(onet_soc_code = "onetsoc_code", title = "title"))
 
-# --- Importance ratings only (Scale ID == "IM"), drop suppressed ------
+# --- Importance ratings only (Scale ID == "IM"), drop suppressed
 im <- ratings |>
   filter(scale_id == "IM") |>
   mutate(recommend_suppress = coalesce(recommend_suppress, "N")) |>
@@ -52,7 +52,7 @@ task_df <- tasks |>
   filter(!is.na(task), importance >= 1, importance <= 5) |>
   distinct(onet_soc_code, task_id, .keep_all = TRUE)
 
-# --- Coverage sanity: flag occupations with < 3 retained tasks --------
+# --- Coverage sanity: flag occupations with < 3 retained tasks
 thin <- task_df |> count(onet_soc_code) |> filter(n < 3)
 if (nrow(thin)) message("note: ", nrow(thin),
                         " occupations have <3 tasks (flag in data notes).")
