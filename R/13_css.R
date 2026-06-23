@@ -1,8 +1,8 @@
 # =====================================================================
-# 13_css.R  —  Classification stability scores (Plan §2.7).
+# 13_css.R  —  Classification stability scores
 # CSS_j = Phi(|s_j - theta*_j| / sigma_g(j)), theta* = nearest threshold.
-# Flags occupations with CSS < 0.75: these are exactly where the
-# common-mode cancellation argument is only approximate.
+# Flags occupations with CSS < 0.75: these are where the
+# common-mode cancellation argument is only approximate
 # =====================================================================
 source(here::here("R", "00_config.R"))
 

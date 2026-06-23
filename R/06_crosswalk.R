@@ -1,9 +1,8 @@
 # =====================================================================
-# 06_crosswalk.R  —  O*NET-SOC 2019 -> UK SOC 2020 (Plan §1.1).
-# DIRECT single-step mapping using the SOC2020<->O*NET-SOC concordance
-# (your "mapping SOC2020-ONET2019" sheet). O*NET 30.3 uses the O*NET-SOC
-# 2019 taxonomy, so the 2019 concordance matches the task data. The US
-# SOC 2018 crosswalk is NOT needed on this path.
+# 06_crosswalk.R  —  O*NET-SOC 2019 -> UK SOC 2020
+# single-step mapping using the NFER SOC2020<->O*NET-SOC concordance
+# O*NET 30.3 uses the O*NET-SOC 2019 taxonomy
+# The US SOC 2018 crosswalk is not needed on this path.
 #
 # Aggregates O*NET occupation exposure to UK SOC 2020 unit groups
 # (4-digit), then to the APS working level (3-digit minor groups).

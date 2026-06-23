@@ -1,6 +1,6 @@
 # =====================================================================
-# 07_aps_employment.R  —  APS employment weights (Plan §1.2/§1.3).
-# Pools 2022-2024 APS employment counts by SOC 2020 (3-digit) x region,
+# 07_aps_employment.R  —  APS employment weights
+# Pools 2022-2025 APS employment counts by SOC 2020 (3-digit) x region,
 # splits the UK into Scotland and rUK, and forms within-region shares
 # sigma_{k,r}. Keeps the year-level panel for the first-difference spec.
 # =====================================================================
@@ -20,7 +20,7 @@ aps_year <- aps_raw |>
   group_by(soc_uk, region, year) |>
   summarise(employment = sum(employment, na.rm = TRUE), .groups = "drop")
 
-# Pooled across years: treat the three waves as one larger survey.
+# Pooled across years: treat the four waves as one larger survey.
 aps_pool <- aps_year |>
   group_by(soc_uk, region) |>
   summarise(l_pool = sum(employment), .groups = "drop") |>

@@ -1,5 +1,5 @@
 # =====================================================================
-# 12_montecarlo.R  —  Uncertainty propagation (Plan §2.6).
+# 12_montecarlo.R  —  Uncertainty propagation
 # Draws R perturbed occupation scores from the within-model error model,
 # re-aggregates to UK SOC, re-classifies, re-weights by APS employment,
 # and returns credible intervals for E_hat_r and Delta E_hat. Includes

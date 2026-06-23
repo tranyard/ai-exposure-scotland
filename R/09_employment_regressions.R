@@ -1,6 +1,6 @@
 # =====================================================================
-# 09_employment_regressions.R  —  Employment regressions (Plan §1.3).
-# Occupation level (eq. 4): y_{k,r} on E_bar_k * Scot, employment-weighted,
+# 09_employment_regressions.R  —  Employment regressions
+# Occupation level (eq. 4A): y_{k,r} on E_bar_k * Scot, employment-weighted,
 #   sector FE, clustered by occupation. y = log employment and share.
 # First-difference secondary: dlog employment on E_bar_k * Scot.
 # Industry level: the sector analogue, descriptive.
@@ -14,7 +14,7 @@ panel <- read_csv(file.path(PATHS$cache, "region_panel.csv"), show_col_types = F
          E_bar = E_uk / 100,
          log_emp = log(pmax(l_pool, 1)))
 
-# --- Occupation-level (eq. 4): levels --------------------------------
+# --- Occupation-level (eq. 4A): levels --------------------------------
 m_logemp <- feols(log_emp ~ E_bar * Scot | major, weights = ~ l_pool,
                   cluster = ~ soc_uk, data = panel)
 m_share  <- feols(sigma   ~ E_bar * Scot | major, weights = ~ l_pool,
@@ -31,7 +31,7 @@ yr <- read_csv(file.path(PATHS$cache, "aps_year.csv"), show_col_types = FALSE) |
 m_fd <- feols(dlog_emp ~ E_bar * Scot | major + year, weights = ~ employment,
               cluster = ~ soc_uk, data = yr)
 
-# --- Industry level (sector x region), descriptive -------------------
+# --- Industry level (sector x region), descriptive
 sector <- read_csv(file.path(PATHS$tables, "sector_exposure.csv"), show_col_types = FALSE) |>
   mutate(Scot = as.integer(region == "Scotland"))
 m_ind <- feols(E_rs ~ Scot, weights = ~ emp, data = sector)   # mean gap across sectors

@@ -1,10 +1,10 @@
 # =====================================================================
-# 14_common_mode_test.R  —  Cross-model robustness (Plan §2.5, Cor. 1).
+# 14_common_mode_test.R  —  Cross-model robustness
 # Re-scores the full task set under the alternative model M', then:
 #   * Proposition 1 check: the bias contaminates the LEVEL by ~mean bias
-#     but the DIFFERENTIAL only by sum_k (sigma_Scot - sigma_rUK) b_k.
+#     but the differential only by sum_k (sigma_Scot - sigma_rUK) b_k.
 #   * Corollary 1: Delta E_bar is far more stable across M, M' than the
-#     levels E_Scot, E_rUK individually.
+#     levels E_Scot, E_rUK individually (common mode cancellation result)
 # =====================================================================
 source(here::here("R", "03_score.R"))
 source(here::here("R", "05_aggregate_occupation.R"))
@@ -23,12 +23,12 @@ if (file.exists(f_mp)) {
   scores_mp <- read_csv(f_mp, show_col_types = FALSE)
 } else {
   message("scoring full task set under M' = ", MODELS$Mp$id, " ...")
-  scores_mp <- score_sync(task_df, "V4")   # use batch_* if M' is Anthropic
+  scores_mp <- score_sync(task_df, "V4")
   save_csv(scores_mp, f_mp)
 }
 scores_m  <- read_csv(file.path(PATHS$scores, "task_scores_V0.csv"), show_col_types = FALSE)
 
-# --- Continuous UK SOC scores from an occupation table ---------------
+# --- Continuous UK SOC scores from an occupation table
 uk_continuous <- function(occ) {
   map3 |>
     inner_join(occ |> mutate(onet_soc_code = as.character(onet_soc_code)) |>
@@ -58,9 +58,9 @@ idx <- function(col) merged |>
 i_m  <- idx("E_uk_M");  i_mp <- idx("E_uk_Mp")
 
 # --- Proposition 1: level vs differential contamination --------------
-level_contam_Scot <- sum(merged$Scotland * merged$b)          # ~ mean bias
+level_contam_Scot <- sum(merged$Scotland * merged$b)      # ~ mean bias
 level_contam_rUK  <- sum(merged$rUK      * merged$b)
-diff_contam       <- sum(merged$dsigma   * merged$b)          # the cancelling term
+diff_contam       <- sum(merged$dsigma   * merged$b)      # the cancelling term
 
 cmc <- tibble(
   quantity = c("E_bar_Scot", "E_bar_rUK", "Delta_E_bar"),

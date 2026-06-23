@@ -1,6 +1,6 @@
 # =====================================================================
-# install_packages.R  —  one-off dependency install. Run once.
-# =====================================================================
+# REQUIRED PACKAGES
+
 pkgs <- c(
   "tidyverse", "here", "digest",      # core + hashing
   "readxl",                            # O*NET .xlsx

@@ -1,8 +1,8 @@
 # =====================================================================
-# 10_acemoglu_projection.R  —  Productivity & GDP projection (Plan §1.4).
-# TFP gain (eq. 6): dln TFP_r ~ kappa * sum_k sigma_{k,r} * pi_k * E_bar_k.
-# kappa, pi and horizon are IMPORTED from the OBR/Acemoglu calibration,
-# not estimated. Regions differ only through their employment-weighted
+# 10_acemoglu_projection.R  —  Productivity & GDP projection
+# TFP gain (eq. 6A): dln TFP_r ~ kappa * sum_k sigma_{k,r} * pi_k * E_bar_k.
+# kappa, pi and horizon are imported from the OBR/Acemoglu calibration,
+#  Regions differ only through their employment-weighted
 # exposure. Reports a band over the OBR parameter range.
 # =====================================================================
 source(here::here("R", "00_config.R"))
@@ -10,13 +10,13 @@ source(here::here("R", "00_config.R"))
 panel <- read_csv(file.path(PATHS$cache, "region_panel.csv"), show_col_types = FALSE) |>
   mutate(E_bar = E_uk / 100)
 
-# Calibration inputs from the sponsor / OBR (provide as CSV when received).
+# Calibration inputs
 # kappa: average net cost saving on exposed tasks; band = {lo, central, hi}.
 calib <- tryCatch(
   read_csv(file.path(PATHS$sfc, "acemoglu_calibration.csv"), show_col_types = FALSE),
   error = function(e) tibble(scenario = c("lo","central","hi"),
                              kappa = c(0.10, 0.18, 0.27)))  # placeholder band
-# pi_k: task-cost share by occupation. If unavailable, default to equal
+# pi_k: task-cost share by occupation. CHECk if available, default to equal
 # weighting (pi_k = 1), making TFP proportional to exposed-employment share.
 pi_k <- tryCatch(
   read_csv(file.path(PATHS$sfc, "task_cost_share.csv"), show_col_types = FALSE),

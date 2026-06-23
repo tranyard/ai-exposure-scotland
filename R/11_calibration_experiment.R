@@ -1,5 +1,5 @@
 # =====================================================================
-# 11_calibration_experiment.R  —  Scoring-variance calibration (Plan §2.4).
+# 11_calibration_experiment.R  —  Scoring-variance calibration
 # Draws a stratified sample of occupations, scores their tasks under the
 # five variants, aggregates to occupation composites, and estimates:
 #   * within-model variance sigma^2_g  (from V0-V3 only)
@@ -26,7 +26,7 @@ message("calibration occupations: ", nrow(samp), " across ",
 
 calib_tasks <- task_df |> semi_join(samp, by = "onet_soc_code")
 
-# --- Score under each variant (sync; small enough) -------------------
+# --- Score under each variant
 score_variant <- function(v) {
   f <- file.path(PATHS$scores, paste0("calib_scores_", v, ".csv"))
   if (file.exists(f)) return(read_csv(f, show_col_types = FALSE))
@@ -65,8 +65,8 @@ save_csv(cross,    file.path(PATHS$cache, "cross_model_bias_calib.csv"))
 
 # --- (Optional) secondary analysis: variance vs info environment -----
 # Provide info_env.csv (onet_soc_code, log_volume, contested) to run eq. 3.
-info_f <- file.path(PATHS$sfc, "info_env.csv")
-if (file.exists(info_f)) {
-  reg <- sigma2_j |> inner_join(read_csv(info_f, show_col_types = FALSE), by = "onet_soc_code")
-  print(summary(lm(sigma2_j ~ log_volume + contested, data = reg)))
-}
+#info_f <- file.path(PATHS$sfc, "info_env.csv")
+#if (file.exists(info_f)) {
+#  reg <- sigma2_j |> inner_join(read_csv(info_f, show_col_types = FALSE), by = "onet_soc_code")
+#  print(summary(lm(sigma2_j ~ log_volume + contested, data = reg)))
+#}

@@ -1,5 +1,5 @@
 # =====================================================================
-# 15_wage_eiv.R  —  CONDITIONAL on ASHE access (Plan §1.5, §2.9).
+# 15_wage_eiv.R  —  CONDITIONAL on ASHE access
 # Worker-level wage regression with an exposure regressor measured with
 # within-model error, plus the classical errors-in-variables correction
 # for attenuation: beta^EIV = beta^OLS / (1 - lambda).
@@ -22,7 +22,7 @@ ashe <- read_csv(ashe_f, show_col_types = FALSE) |>
          Scot = as.integer(region == "Scotland")) |>
   inner_join(uk |> select(soc_uk, E), by = "soc_uk")
 
-# --- OLS wage regression (eq. 10) ------------------------------------
+# --- OLS wage regression (eq. 10A) ------------------------------------
 m_ols <- feols(ln_wage ~ E * Scot + age + I(age^2) + sex + ft | industry + year,
                cluster = ~ soc_uk^region, data = ashe)
 

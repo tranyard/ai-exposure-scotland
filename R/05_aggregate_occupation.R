@@ -1,8 +1,7 @@
 # =====================================================================
-# 05_aggregate_occupation.R  —  Occupation-level exposure (Plan §1.1).
+# 05_aggregate_occupation.R  —  Occupation-level exposure
 # Importance-weighted composite E_j = sum_t w_jt * max(sub, comp),
 # mode-specific scores, threshold shares, and the OBR classification rule.
-# Generic over variant so it serves both V0 and the calibration variants.
 # =====================================================================
 source(here::here("R", "00_config.R"))
 
@@ -20,7 +19,7 @@ aggregate_occupation <- function(scores, task_df, thr = THRESHOLDS$central) {
     E_j      = sum(w * s_task),
     E_sub_j  = sum(w * sub),
     E_comp_j = sum(w * comp),
-    # Threshold task shares (Plan §1.1 / framework §4.3)
+    # Threshold task shares
     Sub_j  = sum(w * (sub >= thr["sub"])),
     Comp_j = sum(w * (sub >= thr["comp"] & sub < thr["sub"])),
     .groups = "drop"

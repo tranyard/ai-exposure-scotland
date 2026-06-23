@@ -1,8 +1,8 @@
 # =====================================================================
-# 08_region_indices_shiftshare.R  —  Region indices + shift-share (Plan §1.2).
+# 08_region_indices_shiftshare.R  —  Region indices + shift-share
 # Builds E_hat_r, S_hat_r, C_hat_r, continuous E_bar_r, the gap Delta E_hat,
-# and decomposes it. The within-occupation effect is exactly zero by
-# construction (same scores both regions) — reported as a finding.
+# and decomposes it. The within-occupation effect should be zero by
+# construction (same scores both regions)
 # =====================================================================
 source(here::here("R", "00_config.R"))
 
@@ -15,7 +15,7 @@ panel <- aps |>
          sub = classification == "Substituted",
          comp = classification == "Complemented")
 
-# --- Region-level indices (eq. 1) ------------------------------------
+# --- Region-level indices (eq. 1A) ------------------------------------
 region_idx <- panel |> group_by(region) |> summarise(
   E_hat = sum(sigma * exposed),
   S_hat = sum(sigma * sub),
@@ -29,7 +29,7 @@ gap <- region_idx |> summarise(
   dE_bar = E_bar[region == "Scotland"] - E_bar[region == "rUK"])
 message(sprintf("Delta E_hat = %.4f | Delta E_bar = %.4f", gap$dE_hat, gap$dE_bar))
 
-# --- Shift-share decomposition (eq. 2) -------------------------------
+# --- Shift-share decomposition (eq. 2A) -------------------------------
 wide <- panel |>
   select(soc_uk, region, sigma, exposed) |>
   pivot_wider(names_from = region, values_from = c(sigma, exposed),
@@ -45,7 +45,7 @@ message(sprintf("composition = %.4f | within = %.4g (zero by construction) | tot
                 shiftshare$composition, shiftshare$within, shiftshare$total))
 save_csv(shiftshare, file.path(PATHS$tables, "shiftshare.csv"))
 
-# --- Sector-level exposure rates (Chart B.3 equivalent) --------------
+# --- Sector-level exposure rates (Chart XB.3 equivalent) --------------
 sector <- panel |>
   mutate(major = major_group(soc_uk)) |>
   group_by(region, major) |>

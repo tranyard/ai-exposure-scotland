@@ -1,9 +1,9 @@
 # =====================================================================
 # 04_run_full_scoring.R  —  Score the full O*NET task set under the
-# baseline model M, variant V0 (Plan §1.1 input; implementation step 3).
+# baseline model M, variant V0
 # Uses the Anthropic Batch API. Writes out/scores/task_scores_V0.csv.
 #
-# Cost guard: ~19,500 tasks x ~430 tokens in / ~40 out. Confirm the
+# Ballpark cost: ~19,500 tasks x ~430 tokens in / ~40 out. Confirm the
 # estimate before submitting; the calibration run (script 11) is the
 # cheap rehearsal of this exact path.
 # =====================================================================
@@ -15,7 +15,7 @@ task_df <- read_csv(require_file(file.path(PATHS$cache, "task_df.csv"),
 
 out_file <- file.path(PATHS$scores, "task_scores_V0.csv")
 if (file.exists(out_file)) {
-  message("already scored: ", out_file, " — delete to re-run."); 
+  message("already scored: ", out_file, " — delete to re-run.");
 } else {
   message("submitting ", nrow(task_df), " tasks to the Batch API ...")
   bid <- batch_submit(task_df, "V0")

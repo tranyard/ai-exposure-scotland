@@ -1,15 +1,11 @@
 # =====================================================================
-# 03_score.R  —  LLM scoring engine (Plan §2.1, §2.4).
+# 03_score.R  —  LLM scoring engine
 # Provider-agnostic interface over httr2. Two transports:
 #   * synchronous  -> small jobs (calibration, cross-model spot runs)
-#   * Anthropic Batch API -> the full ~19,500-task run at 50% cost
-# Output schema (flat CSV), identical regardless of transport/provider:
+#   * Anthropic Batch API -> the full ~19,500-task run
+# Output schema:
 #   onet_soc_code, task_id, variant, provider, model, sub, comp,
 #   primary_mode, key_factors, prompt_hash, run_date
-#
-# NOTE ON THE R<->PYTHON BOUNDARY: this reproduces, in R via httr2, the
-# same job your Python Anthropic-SDK Batch script does. Either may be
-# used; both emit this CSV schema, so the downstream pipeline is agnostic.
 # =====================================================================
 source(here::here("R", "02_prompt.R"))
 suppressPackageStartupMessages({
@@ -23,31 +19,31 @@ suppressPackageStartupMessages({
   v
 }
 
-# --- Offline mock scorer (MOCK_SCORING=1) ----------------------------
+# --- Offline mock scorer (MOCK_SCORING=1) for testing
 # Returns deterministic synthetic scores with realistic structure: an
 # occupation latent, task jitter, within-model variant noise (so V0-V3
 # differ -> positive sigma^2_g), and a V4 level shift (-> a detectable
 # cross-model bias for the common-mode test). No network is used.
-MOCK <- nzchar(Sys.getenv("MOCK_SCORING"))
-.unit_hash <- function(x) (strtoi(substr(digest(x, algo = "md5"), 1, 6), 16L) %% 100000L) / 100000
-.mock_score_tasks <- function(tasks, variant) {
-  spec    <- variant_spec(variant)
-  v_delta <- c(V0 = 0, V1 = -4, V2 = 0, V3 = 0, V4 = 8)[[variant]]
-  occ_lat <- 30 + 50 * vapply(tasks$onet_soc_code, .unit_hash, numeric(1))
-  jit     <- 12 * (vapply(paste(tasks$onet_soc_code, tasks$task_id), .unit_hash, numeric(1)) - 0.5)
-  vnoise  <- 8  * (vapply(paste(tasks$onet_soc_code, tasks$task_id, variant), .unit_hash, numeric(1)) - 0.5)
-  sub  <- pmin(pmax(round(occ_lat + jit + v_delta + vnoise), 0), 100)
-  comp <- pmin(pmax(round(0.85 * occ_lat + jit + vnoise + 5), 0), 100)
-  if (identical(variant, "V3")) comp <- sub
-  tibble(onet_soc_code = tasks$onet_soc_code, task_id = tasks$task_id,
-         variant = variant, provider = spec$model$provider, model = spec$model$id,
-         sub = sub, comp = comp,
-         primary_mode = if_else(sub >= comp, "substitution", "complementarity"),
-         key_factors = "mock", prompt_hash = PROMPT_HASH,
-         run_date = as.character(Sys.Date()))
-}
+#MOCK <- nzchar(Sys.getenv("MOCK_SCORING"))
+#.unit_hash <- function(x) (strtoi(substr(digest(x, algo = "md5"), 1, 6), 16L) %% 100000L) / 100000
+#.mock_score_tasks <- function(tasks, variant) {
+#  spec    <- variant_spec(variant)
+#  v_delta <- c(V0 = 0, V1 = -4, V2 = 0, V3 = 0, V4 = 8)[[variant]]
+#  occ_lat <- 30 + 50 * vapply(tasks$onet_soc_code, .unit_hash, numeric(1))
+#  jit     <- 12 * (vapply(paste(tasks$onet_soc_code, tasks$task_id), .unit_hash, numeric(1)) - 0.5)
+#  vnoise  <- 8  * (vapply(paste(tasks$onet_soc_code, tasks$task_id, variant), .unit_hash, numeric(1)) - 0.5)
+#  sub  <- pmin(pmax(round(occ_lat + jit + v_delta + vnoise), 0), 100)
+#  comp <- pmin(pmax(round(0.85 * occ_lat + jit + vnoise + 5), 0), 100)
+#  if (identical(variant, "V3")) comp <- sub
+#  tibble(onet_soc_code = tasks$onet_soc_code, task_id = tasks$task_id,
+#         variant = variant, provider = spec$model$provider, model = spec$model$id,
+#         sub = sub, comp = comp,
+#         primary_mode = if_else(sub >= comp, "substitution", "complementarity"),
+#         key_factors = "mock", prompt_hash = PROMPT_HASH,
+#         run_date = as.character(Sys.Date()))
+#}
 
-# --- Parse the model's JSON reply into (sub, comp, ...) ---------------
+#Parse the model's JSON reply into (sub, comp, ...)
 .parse_score <- function(text, single) {
   out <- list(sub = NA_real_, comp = NA_real_, primary_mode = NA_character_,
               key_factors = NA_character_)
@@ -65,7 +61,7 @@ MOCK <- nzchar(Sys.getenv("MOCK_SCORING"))
   out
 }
 
-# --- One synchronous call --------------------------------------------
+# One synchronous call
 .score_one <- function(occupation_title, task_text, spec) {
   prov  <- spec$model$provider
   user  <- .user_template(occupation_title, task_text)
@@ -116,9 +112,7 @@ score_sync <- function(tasks, variant) {
   )
 }
 
-# --- Anthropic Batch API (full run, 50% cheaper) ---------------------
-# Submit -> poll -> retrieve. custom_id is a synthetic key joined back
-# afterwards (SOC codes contain '.' which custom_id disallows).
+# Anthropic Batch API (full run, 50% cheaper - takes longer
 batch_submit <- function(tasks, variant) {
   spec <- variant_spec(variant)
   if (MOCK) {
