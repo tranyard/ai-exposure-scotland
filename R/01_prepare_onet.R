@@ -1,13 +1,14 @@
 # =====================================================================
 # 01_prepare_onet.R  —  Build the task dataset
-# Loads O*NET v29, filters to Importance ratings, drops suppressed tasks,
-# attaches occupation titles
+# Loads O*NET v30.3, filters to Importance ratings, drops suppressed
+# tasks, attaches occupation titles.
+# =====================================================================
 
 source(here::here("R", "00_config.R"))
 suppressPackageStartupMessages(library(readxl))
 
 f_tasks   <- require_file(file.path(PATHS$onet, "Task Statements.xlsx"),
-                          "Download O*NET v29 from onetcenter.org/database.aspx")
+                          "Download O*NET v30.3 from onetcenter.org/database.aspx")
 f_ratings <- require_file(file.path(PATHS$onet, "Task Ratings.xlsx"))
 f_occ     <- require_file(file.path(PATHS$onet, "Occupation Data.xlsx"))
 
@@ -51,6 +52,13 @@ task_df <- tasks |>
             by = "onet_soc_code") |>
   filter(!is.na(task), importance >= 1, importance <= 5) |>
   distinct(onet_soc_code, task_id, .keep_all = TRUE)
+
+# --- Guard: no task may reach the scorer without an occupation title,
+#     since the title conditions the model's judgement.
+n_no_title <- sum(is.na(task_df$occupation_title))
+if (n_no_title > 0)
+  stop(n_no_title, " tasks have no occupation title (Occupation Data join ",
+       "failed for their O*NET-SOC codes). Fix before scoring.", call. = FALSE)
 
 # --- Coverage sanity: flag occupations with < 3 retained tasks
 thin <- task_df |> count(onet_soc_code) |> filter(n < 3)

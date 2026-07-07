@@ -1,9 +1,18 @@
 # =====================================================================
 # 12_montecarlo.R  —  Uncertainty propagation
 # Draws R perturbed occupation scores from the within-model error model,
-# re-aggregates to UK SOC, re-classifies, re-weights by APS employment,
-# and returns credible intervals for E_hat_r and Delta E_hat. Includes
-# the correlated-within-group robustness (rho grid).
+# re-aggregates to UK SOC, re-weights by APS employment, and returns
+# credible intervals for the CONTINUOUS indices E_bar_r and the gap
+# Delta E_bar. Includes the correlated-within-group robustness (rho grid).
+#
+# Scope note (matches Section 4.3 of the paper): the propagation target
+# is the continuous index -- the object for which the common-mode
+# cancellation is exact, and the object whose noise sigma^2_g was
+# calibrated (on occupation composites). Uncertainty in the CLASSIFIED
+# shares is nonlinear at the thresholds and is characterised separately,
+# at task level, by the classification-stability score in 13 and the
+# empirical flip rates from 11. Propagating composite-level noise
+# through the task-share classifier would mix estimands.
 # =====================================================================
 source(here::here("R", "00_config.R"))
 
@@ -24,18 +33,17 @@ occ <- occ |> mutate(major = major_group(onet_soc_code)) |>
 map3 <- read_uk_onet_map() |>
   mutate(soc_uk = substr(gsub("[^0-9]", "", soc_uk4), 1, APS$soc_level)) |>
   select(onet_soc_code, soc_uk) |> distinct()
-thr <- THRESHOLDS$central
 
-# One draw: perturb E_j -> map O*NET -> UK minor group -> region indices.
+# One draw: perturb E_j -> map O*NET -> UK minor group -> continuous
+# region indices. Same estimand as the headline E_bar_r in script 08.
 one_draw <- function(eps) {
   s <- pmin(pmax(occ$E_j + eps, 0), 100)
-  d <- tibble(onet_soc_code = occ$onet_soc_code, E = s)
+  d <- tibble(onet_soc_code = as.character(occ$onet_soc_code), E = s)
   uk <- map3 |> inner_join(d, by = "onet_soc_code") |>
-        group_by(soc_uk) |> summarise(E_uk = mean(E), .groups = "drop") |>
-        mutate(exposed = E_uk >= thr["comp"])
+        group_by(soc_uk) |> summarise(E_uk = mean(E), .groups = "drop")
   idx <- aps |> inner_join(uk, by = "soc_uk") |> group_by(region) |>
-        summarise(E_hat = sum(sigma * exposed), .groups = "drop")
-  c(Scot = idx$E_hat[idx$region == "Scotland"], rUK = idx$E_hat[idx$region == "rUK"])
+        summarise(E_bar = sum(sigma * E_uk / 100), .groups = "drop")
+  c(Scot = idx$E_bar[idx$region == "Scotland"], rUK = idx$E_bar[idx$region == "rUK"])
 }
 
 # Independent draws.
@@ -58,7 +66,7 @@ run_mc <- function(rho = 0) {
   m <- m |> mutate(dE = Scot - rUK)
   tibble(
     rho = rho,
-    quantity = c("E_Scotland","E_rUK","Delta_E"),
+    quantity = c("Ebar_Scotland","Ebar_rUK","Delta_Ebar"),
     mean = c(mean(m$Scot), mean(m$rUK), mean(m$dE)),
     sd   = c(sd(m$Scot), sd(m$rUK), sd(m$dE)),
     p2.5 = c(quantile(m$Scot,.025), quantile(m$rUK,.025), quantile(m$dE,.025)),
@@ -70,6 +78,6 @@ run_mc <- function(rho = 0) {
 mc <- map_dfr(MONTECARLO$rho_grid, run_mc)
 print(mc, n = Inf)
 save_csv(mc, file.path(PATHS$tables, "montecarlo_intervals.csv"))
-message("Delta E 95% CI (rho=0): [",
-        sprintf("%.4f, %.4f", mc$p2.5[mc$quantity=="Delta_E" & mc$rho==0],
-                mc$p97.5[mc$quantity=="Delta_E" & mc$rho==0]), "]")
+message("Delta E_bar 95% CI (rho=0): [",
+        sprintf("%.4f, %.4f", mc$p2.5[mc$quantity=="Delta_Ebar" & mc$rho==0],
+                mc$p97.5[mc$quantity=="Delta_Ebar" & mc$rho==0]), "]")

@@ -1,10 +1,19 @@
 # =====================================================================
 # 14_common_mode_test.R  —  Cross-model robustness
-# Re-scores the full task set under the alternative model M', then:
+# Re-scores the full task set under each alternative model (M' = GPT-4o,
+# M'' = Haiku when configured), then:
 #   * Proposition 1 check: the bias contaminates the LEVEL by ~mean bias
 #     but the differential only by sum_k (sigma_Scot - sigma_rUK) b_k.
-#   * Corollary 1: Delta E_bar is far more stable across M, M' than the
-#     levels E_Scot, E_rUK individually (common mode cancellation result)
+#   * Corollary 1: Delta E_bar is far more stable across models than the
+#     levels E_Scot, E_rUK individually (common-mode cancellation), with
+#     the empirical Cauchy-Schwarz bound reported alongside the realised
+#     shift.
+# Two contrasts (M vs M', M vs M'') rest the stability claim on more
+# than a single comparison.
+#
+# Transport: Anthropic alternatives run through the resumable Batch API;
+# the OpenAI arm runs synchronously with chunked checkpointing, so an
+# interrupted multi-hour run resumes where it stopped.
 # =====================================================================
 source(here::here("R", "03_score.R"))
 source(here::here("R", "05_aggregate_occupation.R"))
@@ -17,18 +26,20 @@ map3 <- read_uk_onet_map() |>
   select(onet_soc_code, soc_uk) |> distinct()
 thr <- THRESHOLDS$central
 
-# --- Full M' scoring (cached) ----------------------------------------
-f_mp <- file.path(PATHS$scores, "task_scores_V4_full.csv")
-if (file.exists(f_mp)) {
-  scores_mp <- read_csv(f_mp, show_col_types = FALSE)
-} else {
-  message("scoring full task set under M' = ", MODELS$Mp$id, " ...")
-  scores_mp <- score_sync(task_df, "V4")
-  save_csv(scores_mp, f_mp)
+# --- Score the full set under each alternative model (cached/resumable)
+alt_models <- compact(MODELS[c("Mp", "Mpp")])
+score_alt <- function(m, name) {
+  tag <- paste0("alt_", name)
+  if (m$provider == "anthropic") batch_run(task_df, "V0", tag, model = m)
+  else                           score_sync_chunked(task_df, "V0", tag, model = m)
 }
-scores_m  <- read_csv(file.path(PATHS$scores, "task_scores_V0.csv"), show_col_types = FALSE)
+scores_alt <- imap(alt_models, function(m, name) {
+  message("scoring full task set under ", name, " = ", m$id, " ...")
+  score_alt(m, name)
+})
+scores_m <- read_csv(file.path(PATHS$scores, "task_scores_V0.csv"), show_col_types = FALSE)
 
-# --- Continuous UK SOC scores from an occupation table
+# --- Continuous UK SOC scores from an occupation table -----------------
 uk_continuous <- function(occ) {
   map3 |>
     inner_join(occ |> mutate(onet_soc_code = as.character(onet_soc_code)) |>
@@ -36,47 +47,43 @@ uk_continuous <- function(occ) {
     group_by(soc_uk) |> summarise(E_uk = mean(E_j), .groups = "drop")
 }
 
-occ_m  <- aggregate_occupation(scores_m,  task_df, thr)
-occ_mp <- aggregate_occupation(scores_mp, task_df, thr)
-uk_m   <- uk_continuous(occ_m)  |> rename(E_uk_M  = E_uk)
-uk_mp  <- uk_continuous(occ_mp) |> rename(E_uk_Mp = E_uk)
+uk_m <- uk_continuous(aggregate_occupation(scores_m, task_df, thr))
 
-# --- Region shares wide ----------------------------------------------
+# --- Region shares wide -------------------------------------------------
 shares <- aps |> select(soc_uk, region, sigma) |>
   pivot_wider(names_from = region, values_from = sigma, values_fill = 0) |>
   mutate(dsigma = Scotland - rUK)            # sum_k dsigma = 0
 
-merged <- shares |> inner_join(uk_m, by = "soc_uk") |>
-  inner_join(uk_mp, by = "soc_uk") |>
-  mutate(b = (E_uk_M - E_uk_Mp) / 100)       # cross-model bias, continuous scale
-
-# --- Region indices under each model ---------------------------------
-idx <- function(col) merged |>
-  summarise(Scot = sum(Scotland * .data[[col]]/100),
-            rUK  = sum(rUK      * .data[[col]]/100)) |>
+idx <- function(d, col) d |>
+  summarise(Scot = sum(Scotland * .data[[col]] / 100),
+            rUK  = sum(rUK      * .data[[col]] / 100)) |>
   mutate(dE = Scot - rUK)
-i_m  <- idx("E_uk_M");  i_mp <- idx("E_uk_Mp")
 
-# --- Proposition 1: level vs differential contamination --------------
-level_contam_Scot <- sum(merged$Scotland * merged$b)      # ~ mean bias
-level_contam_rUK  <- sum(merged$rUK      * merged$b)
-diff_contam       <- sum(merged$dsigma   * merged$b)      # the cancelling term
-
-cmc <- tibble(
-  quantity = c("E_bar_Scot", "E_bar_rUK", "Delta_E_bar"),
-  under_M  = c(i_m$Scot,  i_m$rUK,  i_m$dE),
-  under_Mp = c(i_mp$Scot, i_mp$rUK, i_mp$dE),
-  cross_model_shift = c(i_m$Scot - i_mp$Scot, i_m$rUK - i_mp$rUK, i_m$dE - i_mp$dE)
-)
+# --- Proposition 1 / Corollary 1, one row per alternative model ---------
+cmc <- imap_dfr(scores_alt, function(s_alt, name) {
+  uk_alt <- uk_continuous(aggregate_occupation(s_alt, task_df, thr)) |>
+    rename(E_uk_alt = E_uk)
+  merged <- shares |>
+    inner_join(uk_m,   by = "soc_uk") |>
+    inner_join(uk_alt, by = "soc_uk") |>
+    mutate(b = (E_uk - E_uk_alt) / 100)      # cross-model bias, continuous scale
+  i_m   <- idx(merged, "E_uk")
+  i_alt <- idx(merged, "E_uk_alt")
+  b_dm  <- merged$b - mean(merged$b)         # Prop 1: only the demeaned part can survive
+  cs_bound <- sqrt(sum(merged$dsigma^2)) * sqrt(sum(b_dm^2))
+  save_csv(merged |> select(soc_uk, dsigma, E_uk, E_uk_alt, b),
+           file.path(PATHS$cache, paste0("cross_model_full_", name, ".csv")))
+  tibble(alt_model   = alt_models[[name]]$id,
+         level_shift_Scot = i_m$Scot - i_alt$Scot,
+         level_shift_rUK  = i_m$rUK  - i_alt$rUK,
+         gap_shift        = i_m$dE   - i_alt$dE,
+         cs_bound         = cs_bound,
+         mean_bias        = mean(merged$b))
+})
 print(cmc)
-message(sprintf(
-  "Prop 1: level contamination ~ %.4f (Scot), %.4f (rUK) | differential contamination = %.5f",
-  level_contam_Scot, level_contam_rUK, diff_contam))
-message(sprintf(
-  "Cor 1: |cross-model shift| in levels = %.4f / %.4f vs in the gap = %.5f",
-  abs(cmc$cross_model_shift[1]), abs(cmc$cross_model_shift[2]),
-  abs(cmc$cross_model_shift[3])))
+walk(seq_len(nrow(cmc)), function(i) message(sprintf(
+  "%s | levels shift %.4f / %.4f (~mean bias %.4f) | gap shift %.5f (C-S bound %.5f)",
+  cmc$alt_model[i], abs(cmc$level_shift_Scot[i]), abs(cmc$level_shift_rUK[i]),
+  cmc$mean_bias[i], abs(cmc$gap_shift[i]), cmc$cs_bound[i])))
 
 save_csv(cmc, file.path(PATHS$tables, "common_mode_test.csv"))
-save_csv(merged |> select(soc_uk, dsigma, E_uk_M, E_uk_Mp, b),
-         file.path(PATHS$cache, "cross_model_full.csv"))
