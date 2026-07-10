@@ -5,7 +5,7 @@
 # realised scores, and the V0 arm is reused from the full run rather
 # than re-bought.
 #
-# Design (Table 1 of the paper):
+# Design (Table 1 ):
 #   * 9 occupations per major group: 5 drawn at RANDOM (the estimation
 #     stratum for sigma^2_g -- a purely boundary-proximate sample would
 #     bias the noise estimate if ambiguity varies with score level) and
@@ -67,9 +67,8 @@ save_csv(samp |> select(onet_soc_code, major, stratum),
 
 calib_tasks <- task_df |> semi_join(samp, by = "onet_soc_code")
 
-# --- Score V1, V2, V3, V5, V6 via the Batch API; reuse V0 --------------
-scores_v0 <- read_csv(file.path(PATHS$scores, "task_scores_V0.csv"),
-                      show_col_types = FALSE) |>
+# --- Score V1, V2, V3, V5, V6
+scores_v0 <- read_scores(file.path(PATHS$scores, "task_scores_V0.csv")) |>
   semi_join(samp, by = "onet_soc_code")
 
 calib_scores <- c(
@@ -80,15 +79,14 @@ calib_scores <- c(
   })
 )
 
-# --- Occupation composites per variant ---------------------------------
+
 occ_by_variant <- imap_dfr(calib_scores, function(s, v) {
   aggregate_occupation(s, calib_tasks, thr) |>
     transmute(onet_soc_code, variant = v, s_jk = E_j,
               classification)
 }) |> left_join(samp |> select(onet_soc_code, stratum), by = "onet_soc_code")
 
-# --- Occupation-composite noise: sigma^2_j, sigma^2_g -------------------
-# Noise variants only, RANDOM stratum only.
+# Occupation-composite noise: sigma^2_j, sigma^2_g
 wm <- occ_by_variant |>
   filter(variant %in% CALIB$noise_variants, stratum == "random")
 sigma2_j <- wm |> group_by(onet_soc_code) |>
@@ -99,9 +97,7 @@ sigma2_g <- sigma2_j |> group_by(major) |>
 message("within-model sigma_g (sd points) by major group:\n",
         paste(sigma2_g$major, round(sqrt(sigma2_g$sigma2_g), 1), collapse = "  "))
 
-# --- Task-level noise (feeds the task-level CSS in 13) ------------------
-# Variance of each task's sub and comp scores across the noise variants,
-# averaged within major group over random-stratum occupations.
+# Task-level noise (feeds the task-level CSS in 13
 task_noise <- imap_dfr(calib_scores[CALIB$noise_variants], function(s, v)
                 s |> mutate(variant = v)) |>
   semi_join(samp |> filter(stratum == "random"), by = "onet_soc_code") |>
@@ -113,7 +109,7 @@ sigma2_task_g <- task_noise |> group_by(major) |>
             sigma2_comp_g = mean(v_comp, na.rm = TRUE),
             n_tasks = n(), .groups = "drop")
 
-# --- Estimand sensitivity: V1 (horizon) and V3 (rubric form) ------------
+# Estimand sensitivity: V1 (horizon) and V3 (rubric form)
 wide_s <- occ_by_variant |>
   filter(variant %in% c("V0", CALIB$sensitivity_variants)) |>
   select(onet_soc_code, variant, s_jk) |>
@@ -129,7 +125,7 @@ message("estimand sensitivity (shift vs V0): ",
         paste(sens$variant, sprintf("mean %.1f sd %.1f", sens$mean_shift, sens$sd_shift),
               collapse = " | "))
 
-# --- Classification flip rate across NOISE variants ---------------------
+# Classification flip rate across noise variants
 # Empirical stability check the CSS must predict: an occupation "flips"
 # if its class is not constant across {V0, V2, V5, V6}.
 flips <- occ_by_variant |>

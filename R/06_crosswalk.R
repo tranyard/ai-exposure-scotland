@@ -1,3 +1,10 @@
+# =====================================================================
+# 06_crosswalk.R
+# CHANGES: carries the primary-mode vote shares through to SOC4/SOC3
+# and attaches classification_pm alongside the threshold classification.
+# Aggregation of the continuous scores is UNCHANGED (this file remains
+# the definition that uk3_continuous() in 00_config.R mirrors).
+# =====================================================================
 source(here::here("R", "00_config.R"))
 
 map <- read_uk_onet_map()
@@ -12,18 +19,23 @@ crosswalk_one <- function(set) {
   uk4 <- map |>
     inner_join(occ, by = "onet_soc_code") |>
     group_by(soc_uk4) |>
-    summarise(across(c(E_j, E_sub_j, E_comp_j, E_sat_j, Sub_j, Comp_j),
+    summarise(across(c(E_j, E_sub_j, E_comp_j, E_sat_j, Sub_j, Comp_j,
+                       PM_sub_j, PM_comp_j),                        ## NEW cols
                      \(x) weighted.mean(x, weight)), .groups = "drop") |>
     rename(E_uk = E_j, E_uk_sub = E_sub_j, E_uk_comp = E_comp_j, E_uk_sat = E_sat_j,
-           Sub_uk = Sub_j, Comp_uk = Comp_j) |>
-    mutate(classification = classify_occ(Sub_uk, Comp_uk))
+           Sub_uk = Sub_j, Comp_uk = Comp_j,
+           PM_sub_uk = PM_sub_j, PM_comp_uk = PM_comp_j) |>
+    mutate(classification    = classify_occ(Sub_uk, Comp_uk),
+           classification_pm = classify_pm(PM_sub_uk, PM_comp_uk))  ## NEW
 
   uk3 <- uk4 |>
     mutate(soc_uk = substr(gsub("[^0-9]", "", soc_uk4), 1, APS$soc_level)) |>
     group_by(soc_uk) |>
-    summarise(across(c(E_uk, E_uk_sub, E_uk_comp, E_uk_sat, Sub_uk, Comp_uk), mean),
+    summarise(across(c(E_uk, E_uk_sub, E_uk_comp, E_uk_sat, Sub_uk, Comp_uk,
+                       PM_sub_uk, PM_comp_uk), mean),
               .groups = "drop") |>
-    mutate(classification = classify_occ(Sub_uk, Comp_uk))
+    mutate(classification    = classify_occ(Sub_uk, Comp_uk),
+           classification_pm = classify_pm(PM_sub_uk, PM_comp_uk))  ## NEW
 
   save_csv(uk4, file.path(PATHS$cache, paste0("uk_soc4_scores", suffix, ".csv")))
   save_csv(uk3, file.path(PATHS$cache, paste0("uk_soc3_scores", suffix, ".csv")))

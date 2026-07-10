@@ -1,6 +1,21 @@
 # =====================================================================
 # 00_config.R  —  Central configuration sourced by every script.
 # Edit paths and parameters here;
+#
+# CHANGES (July 2026 revision):
+#   * APS$codes$scotland is now c(3, 4): COUNTRY code 4 (Scotland north
+#     of the Caledonian Canal) was previously falling through to rUK.
+#   * APS$vars$gor + APS$codes$london_gor: GOR9D retained for the
+#     comparator analysis (16_comparators.R).
+#   * BOOT: APS person-bootstrap parameters (07 writes replicate shares,
+#     12 composes them with scoring noise).
+#   * uk3_continuous(): shared O*NET -> SOC3 aggregation that mirrors
+#     06_crosswalk EXACTLY (weighted mean to SOC4, unweighted mean to
+#     SOC3). Used by 12 and 14 so every stage aggregates identically —
+#     previously 12/14 used a direct unweighted O*NET -> SOC3 mean,
+#     which shifted the MC baseline off the headline gap.
+#   * classify_pm(): classification from the model's own primary_mode
+#     votes (free robustness row against the threshold classifier).
 # =====================================================================
 
 suppressPackageStartupMessages({
@@ -24,14 +39,10 @@ PATHS <- list(
 invisible(lapply(PATHS, dir.create, recursive = TRUE, showWarnings = FALSE))
 
 # ---- Models -----------------------------------------------------------
-# M   = baseline annotator
-# Mp  = first alternative model (different provider) for Corollary 1.
-# Mpp = second alternative model (same provider, different tier), so the
-#       cross-model stability claim rests on two contrasts rather than one.
 MODELS <- list(
   M   = list(provider = "anthropic", id = "claude-sonnet-4-6"),
   Mp  = list(provider = "openai",    id = "gpt-4o-2024-11-20"),
-  Mpp = list(provider = "anthropic", id = "claude-haiku-4-5")
+  Mpp = list(provider = "anthropic", id = "claude-haiku-4-5-20251001")
 )
 
 # ---- Scoring settings (frozen) --------------------------------------
@@ -39,37 +50,27 @@ SCORING <- list(
   temperature = 0,
   max_tokens  = 150,
   base_year   = 2026,
-  horizon_years_baseline = 10,     # V0 horizon
-  horizon_years_short    = 5,      # V1 horizon
+  horizon_years_baseline = 10,
+  horizon_years_short    = 5,
   anthropic_version = "2023-06-01",
-  concurrency = 8,                 # sync workers; a fresh API account at a low
-                                   # usage tier throttles hard above this
+  concurrency = 8,
   retries = 2
 )
 
-# ---- Exposure operators
-# max : headline composite -> OBR benchmar
-# sub : substitution-only.
-# sat : saturating combination E_sat = s + c - sc/100.
+# ---- Exposure operators ----------------------------------------------
 OPERATORS <- list(
   max = function(sub, comp) pmax(sub, comp),
   sub = function(sub, comp) sub,
   sat = function(sub, comp) sub + comp - sub * comp / 100
 )
 
-# ---- Classification stability
-# flag: occupations with S_j below this are flagged "uncertain"
-# grid: cutoff sweep for the invariance-of-the-gap table.
+# ---- Classification stability ----------------------------------------
 STAB <- list(
   flag = 0.75,
   grid = c(0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90)
 )
 
 # ---- Classification --------------------------------------------------
-#   substituted   if sub >= thr["sub"]
-#   complemented  if comp >= thr["comp"] and sub < thr["sub"]
-#   unexposed     otherwise
-# majority of the exposed mass.
 THRESHOLDS <- list(
   central = c(sub = 70, comp = 40),  # OBR baseline
   low     = c(sub = 60, comp = 30),
@@ -86,49 +87,69 @@ classify_occ <- function(Sub, Comp, materiality = EXP_MATERIALITY) {
   )
 }
 
+## NEW: classification from the model's own primary_mode field.
+## PM_sub / PM_comp are importance-weighted shares of tasks the model
+## itself labelled substitution / complementarity. Threshold-free.
+classify_pm <- function(PM_sub, PM_comp, materiality = EXP_MATERIALITY) {
+  Exp <- PM_sub + PM_comp
+  dplyr::case_when(
+    Exp < materiality  ~ "Unexposed",
+    PM_sub > PM_comp   ~ "Substituted",
+    TRUE               ~ "Complemented"
+  )
+}
+
 # ---- Calibration / propagation parameters ---------------------------
-# Variant scheme (Table 1 of the paper):
-#   V0 baseline; V2 criteria reversed; V5 paraphrased rubric; V6 reordered
-#   user message  -> meaning-preserving perturbations = the NOISE set.
-#   V1 5-year horizon; V3 single composite score -> ESTIMAND sensitivity,
-#   reported separately, never pooled into sigma^2_g.
 CALIB <- list(
   n_occupations   = 90,
-  n_random        = 10,       # sigma^2_g estimated on this draw
-  n_near_boundary = 8,        # held out to validate the CSS out of sample
-  score_variants  = c("V1", "V2", "V3", "V5", "V6"),  # V0 reused from full run
+  n_random        = 10,
+  n_near_boundary = 8,
+  score_variants  = c("V1", "V2", "V3", "V5", "V6"),
   noise_variants  = c("V0", "V2", "V5", "V6"),
   sensitivity_variants = c("V1", "V3")
 )
 MONTECARLO <- list(
-  R = 1000L,                 # number of draws
-  rho_grid = c(0, 0.2, 0.4), # intra-group error correlation robustness
+  R = 1000L,
+  rho_grid = c(0, 0.2, 0.4),
   boundary_lo = 15, boundary_hi = 85
 )
 
-# ---- APS pooling
+## NEW: APS person-bootstrap (sampling uncertainty in the employment
+## shares). 07 writes BOOT$B replicate share vectors per region;
+## 12 composes them with the scoring-noise draws.
+BOOT <- list(
+  B = as.integer(Sys.getenv("APS_BOOT_B", "500"))
+)
+
+# ---- APS pooling ------------------------------------------------------
 # -9 does not apply, -8 no answer
 #   ILODEFR: 1 In employment, 2 ILO unemployed, 3 Inactive
 #   SEX:     1 Male, 2 Female       FTPT: 1 Full time, 2 Part time
 #   SC20MMN: SOC 2020 minor-group numeric codes (e.g. 412)
 #   INDS07M: SIC 2007 sections coded alphabetically (7 = G, 16 = P, ...)
-#   COUNTRY: 1 England, 3 + 4(North of Caladonian Canal WE OMIT) = Scotland
+#   COUNTRY: 1 England, 2 Wales, 3 Scotland, 4 Scotland north of the
+#            Caledonian Canal, 5 Northern Ireland.
+#            SCOTLAND = codes 3 AND 4. (Code 4 was previously being
+#            assigned to rUK — fixed.)
+#   GOR9D:   ONS 9-character region code; London = E12000007.
 APS <- list(
   years         = c(2022, 2023, 2024, 2025),
   soc_level     = 3L,
   regions       = c("Scotland", "rUK"),
   codes = list(
     in_employment = 1,
-    scotland      = 3
+    scotland      = c(3, 4),          ## CHANGED (was 3)
+    london_gor    = "E12000007"       ## NEW
   ),
   vars = list(
-    weight     = "PWTA22",    # person weight  -> employment counts
-    inc_weight = "PIWTA22",   # income weight  -> wage subsample only
+    weight     = "PWTA22",
+    inc_weight = "PIWTA22",
     country    = "COUNTRY",
+    gor        = "GOR9D",             ## NEW
     ilo        = "ILODEFR",
-    soc        = "SC20MMN",   # SOC2020 minor group, numeric
-    year       = "REFWKY",    # reference-week year
-    hourpay    = "HOURPAY",   # derived gross hourly pay (wage module)
+    soc        = "SC20MMN",
+    year       = "REFWKY",
+    hourpay    = "HOURPAY",
     age        = "AGE",
     sex        = "SEX",
     ft         = "FTPT",
@@ -140,6 +161,11 @@ APS <- list(
 aps_num <- function(x) {
   v <- suppressWarnings(as.numeric(x))
   replace(v, !is.na(v) & v < 0, NA_real_)
+}
+
+## NEW: single definition of the Scotland/rUK split, used everywhere.
+region_of <- function(country) {
+  dplyr::if_else(country %in% APS$codes$scotland, "Scotland", "rUK")
 }
 
 # ---- Reproducibility -------------------------------------------------
@@ -159,6 +185,11 @@ save_csv <- function(x, file) {
   invisible(x)
 }
 
+read_scores <- function(file) {
+  readr::read_csv(file, show_col_types = FALSE) |>
+    dplyr::mutate(run_date = as.character(run_date))
+}
+
 require_file <- function(path, hint = "") {
   if (!file.exists(path))
     stop("Missing input: ", path,
@@ -169,7 +200,7 @@ require_file <- function(path, hint = "") {
 # ---- Crosswalk loader: UK SOC 2020 unit group <-> O*NET-SOC code -----
 read_uk_onet_map <- function() {
   f <- require_file(file.path(PATHS$crosswalks, "soc2020_to_onet.csv"),
-       "Export the SOC2020<->O*NET-SOC sheet here. Needs a UK SOC2020 unit-group column and an O*NET-SOC code column.")
+                    "Export the SOC2020<->O*NET-SOC sheet here. Needs a UK SOC2020 unit-group column and an O*NET-SOC code column.")
   raw <- readr::read_csv(f, show_col_types = FALSE)
   nm  <- tolower(names(raw))
   ci_uk <- which(stringr::str_detect(nm, "unit group|soc.?2020"))[1]
@@ -185,6 +216,28 @@ read_uk_onet_map <- function() {
     distinct()
 }
 
+## NEW: shared O*NET -> SOC3 continuous aggregation, mirroring
+## 06_crosswalk EXACTLY: crosswalk-weighted mean O*NET -> SOC4, then
+## unweighted mean SOC4 -> SOC3. Any script that needs a continuous
+## SOC3 score from an occupation table (12_montecarlo, 14_common_mode)
+## must use this rather than rolling its own, so that the propagated
+## and cross-model objects are the same estimand as the headline.
+uk3_continuous <- function(occ, cols = "E_j", map = NULL) {
+  if (is.null(map)) map <- read_uk_onet_map()
+  if (!"weight" %in% names(map)) map$weight <- 1
+  occ <- occ |> dplyr::mutate(onet_soc_code = as.character(onet_soc_code))
+  map |>
+    dplyr::inner_join(occ, by = "onet_soc_code") |>
+    dplyr::group_by(soc_uk4) |>
+    dplyr::summarise(dplyr::across(dplyr::all_of(cols),
+                                   \(x) stats::weighted.mean(x, weight)),
+                     .groups = "drop") |>
+    dplyr::mutate(soc_uk = substr(gsub("[^0-9]", "", soc_uk4), 1, APS$soc_level)) |>
+    dplyr::group_by(soc_uk) |>
+    dplyr::summarise(dplyr::across(dplyr::all_of(cols), mean), .groups = "drop")
+}
+
 message("config loaded | baseline model = ", MODELS$M$id,
         " | alternatives = ",
-        paste(compact(map(MODELS[c("Mp","Mpp")], "id")), collapse = ", "))
+        paste(compact(map(MODELS[c("Mp","Mpp")], "id")), collapse = ", "),
+        " | Scotland = COUNTRY %in% {", paste(APS$codes$scotland, collapse = ","), "}")

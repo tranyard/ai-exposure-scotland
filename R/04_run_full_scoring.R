@@ -23,6 +23,8 @@ task_df <- read_csv(require_file(file.path(PATHS$cache, "task_df.csv"),
 out_file <- file.path(PATHS$scores, "task_scores_V0.csv")
 
 message("scoring ", nrow(task_df), " tasks under ", MODELS$M$id, " (V0) ...")
+
+########### SCORING LINE EXECUTE ###########
 scores <- batch_run(task_df, "V0", "V0")   # read / resume / submit as needed
 
 # --- Validation: retry any parse failures once, synchronously ---------
