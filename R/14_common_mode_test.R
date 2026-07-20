@@ -23,6 +23,7 @@
 #   RUN_SCORING=1 CM_ARM=Mp  Rscript R/14_common_mode_test.R   # later
 # =====================================================================
 source(here::here("R", "03_score.R"))
+source(here::here("R", "03b_openai_batch.R"))
 source(here::here("R", "05_aggregate_occupation.R"))
 
 task_df <- read_csv(file.path(PATHS$cache, "task_df.csv"), show_col_types = FALSE)
@@ -63,9 +64,9 @@ if (n_sub > 0) {
 
 # --- Score the full/subsampled set under each alternative model ---------
 score_alt <- function(m, name) {
-  tag <- paste0("alt_", name, if (n_sub > 0) paste0("_top", n_sub) else "")
+  tag <- paste0("alt_", name)
   if (m$provider == "anthropic") batch_run(task_df, "V0", tag, model = m)
-  else                           score_sync_chunked(task_df, "V0", tag, model = m)
+  else                           openai_batch_run(task_df, "V0", tag, model = m)
 }
 scores_alt <- imap(alt_models, function(m, name) {
   message("scoring under ", name, " = ", m$id, " ...")
