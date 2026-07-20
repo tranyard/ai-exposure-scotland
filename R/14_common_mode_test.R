@@ -23,6 +23,7 @@
 #   RUN_SCORING=1 CM_ARM=Mp  Rscript R/14_common_mode_test.R   # later
 # =====================================================================
 source(here::here("R", "03_score.R"))
+source(here::here("R", "03b_openai_batch.R"))
 source(here::here("R", "05_aggregate_occupation.R"))
 
 task_df <- read_csv(file.path(PATHS$cache, "task_df.csv"), show_col_types = FALSE)
@@ -39,11 +40,11 @@ thr <- THRESHOLDS$central
 arm <- toupper(Sys.getenv("CM_ARM", "MPP"))
 alt_keys <- switch(arm, MPP = "Mpp", MP = "Mp", BOTH = c("Mp", "Mpp"),
                    stop("CM_ARM must be Mpp, Mp or BOTH"))
-alt_models <- compact(MODELS[alt_keys])
+alt_models <- compact(MODELS["Mpp"])   # Haiku only - change to "Mp" for Openai gpt 4o
 message("cross-model arm(s): ",
         paste(map_chr(alt_models, "id"), collapse = ", "))
 
-# --- Optional employment-mass subsample ---------------------------------
+# --- Optional employment-mass subsample
 n_sub <- as.integer(Sys.getenv("CM_SUBSAMPLE", "0"))
 if (n_sub > 0) {
   # Distribute pooled UK employment to O*NET codes through the crosswalk
@@ -61,11 +62,11 @@ if (n_sub > 0) {
                   length(keep), 100 * coverage, nrow(task_df)))
 }
 
-# --- Score the full/subsampled set under each alternative model ---------
+# --- Score the full/subsampled set under each alternative model
 score_alt <- function(m, name) {
-  tag <- paste0("alt_", name, if (n_sub > 0) paste0("_top", n_sub) else "")
+  tag <- paste0("alt_", name)
   if (m$provider == "anthropic") batch_run(task_df, "V0", tag, model = m)
-  else                           score_sync_chunked(task_df, "V0", tag, model = m)
+  else                           openai_batch_run(task_df, "V0", tag, model = m)
 }
 scores_alt <- imap(alt_models, function(m, name) {
   message("scoring under ", name, " = ", m$id, " ...")
@@ -74,7 +75,7 @@ scores_alt <- imap(alt_models, function(m, name) {
 scores_m <- read_csv(file.path(PATHS$scores, "task_scores_V0.csv"), show_col_types = FALSE) |>
   semi_join(task_df, by = c("onet_soc_code", "task_id"))
 
-# --- Continuous UK SOC scores via the SHARED aggregation ----------------
+# --- Continuous UK SOC scores via the SHARED aggregation
 uk_m <- uk3_continuous(aggregate_occupation(scores_m, task_df, thr),
                        cols = "E_j", map = map) |> rename(E_uk = E_j)
 
