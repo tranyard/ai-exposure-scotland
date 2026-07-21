@@ -7,9 +7,9 @@ panel <- read_csv(file.path(PATHS$cache, "region_panel.csv"), show_col_types = F
 calib <- tryCatch(read_csv(file.path(PATHS$sfc, "acemoglu_calibration.csv"),
                            show_col_types = FALSE),
                   error = function(e)
-                    tibble(scenario = c("lo", "central", "hi"), kappa = c(0.10, 0.18, 0.27)))
+                    tibble(scenario = c("lo", "central", "hi"), kappa = c(0.11, 0.144, 0.27)))
 pi_k <- tryCatch(read_csv(file.path(PATHS$sfc, "task_cost_share.csv"), show_col_types = FALSE),
-                 error = function(e) distinct(panel, soc_uk) |> mutate(pi = 1))
+                 error = function(e) distinct(panel, soc_uk) |> mutate(pi = 0.23))
 
 base <- panel |>
   left_join(pi_k, by = "soc_uk") |>
