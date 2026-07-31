@@ -32,8 +32,8 @@ message(sum(stab$uncertain), " of ", nrow(stab), " occupations flagged (S < ", S
 save_csv(select(stab, onet_soc_code, E_j, classification, S, uncertain),
          file.path(PATHS$tables, "classification_stability.csv"))
 
-# Validation: flagged occupations should flip class across the noise
-# variants more often than unflagged ones (held-out boundary stratum).
+# Flagged occupations should flip class across the noise variants more
+# often than unflagged ones.
 flip_f <- file.path(PATHS$cache, "calib_fliprate.csv")
 if (file.exists(flip_f)) {
   val <- read_csv(flip_f, show_col_types = FALSE) |>
