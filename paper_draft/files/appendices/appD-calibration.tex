@@ -1,0 +1,36 @@
+\section{Calibration and Robustness Detail}\label{app:calibration}
+
+\subsection{The stratified calibration sample}
+
+The calibration draws $N = 90$ occupations, eighteen from each of five broad occupational families. The families are obtained by collapsing the O*NET two-digit major groups onto their leading digit, which yields a professional and technical family, a second covering community, legal, education, arts and healthcare practitioner work, a third covering healthcare support, protective, food, building and personal services, a fourth covering sales, office administration, farming, construction and installation, and a fifth covering production and transport. The partition is coarse deliberately. Because $\widehat{\sigma}^2_g$ is estimated from four scoring conditions on the occupations drawn within each family, a finer split leaves cells too thin for the variance to be usable, and this is the finest grouping at which every cell carries eighteen sampled occupations. The same $g(j)$ indexes the noise variance throughout \cref{sec:noise} and the propagation of \cref{tab:propagation}.
+
+Within each family, ten occupations are drawn at random and eight are the ones sitting nearest the classification boundary. Estimating the framing variance on a purely boundary-proximate sample would bias it upward if ambiguity rises towards the middle of the scale, which is where the boundaries sit. The random stratum avoids this and supplies $\widehat{\sigma}^2_g$; the boundary stratum is held out, and is used to check that instability concentrates where the construction says it should rather than to estimate anything.
+
+\subsection{Noise versus estimand: why two conditions are excluded from \texorpdfstring{$\widehat{\sigma}^2_g$}{the variance}}
+
+Of the six scoring conditions, four are meaning-preserving perturbations of the frozen prompt and identify the framing noise. The remaining two, the five-year horizon and the single-composite rubric, ask the model a different question, so I report their occupation-level shifts as named sensitivities and do not pool them into $\widehat{\sigma}^2_g$. Pooling them would conflate framing noise with a change of estimand and overstate the variance to which the propagation applies. By \cref{prop:cancellation}, the component of either shift that is common across occupations is in any case innocuous for the differential, which is consistent with the near-unit cross-occupation correlations (0.998 and 0.956) the two variants leave behind.
+
+\subsection{Correlated-error propagation}
+
+Across $R = 1{,}000$ draws I perturb each occupation score, $s^{(r)}_j \sim N(s_j, \widehat{\sigma}^2_{g(j)})$ truncated to $[0,100]$, re-aggregate, re-weight, and record $\dEbar^{(r)}$. Because correlated framing errors would otherwise lead independent draws to understate aggregate uncertainty, I allow intra-family correlation $\varepsilon^{(r)}_g \sim N\bigl(0, \widehat{\sigma}^2_g [(1-\rho)I + \rho \bm{1}\bm{1}^{\top}]\bigr)$ for $\rho \in \{0, 0.2, 0.4\}$. The resulting inflation is exactly the design-effect factor derived at \cref{eq:A11}, which reduces to the independent case at $\rho = 0$; since $\rho$ is not identified from four scoring conditions I do not estimate it, and read the spread across the $\rho$ rows of \cref{tab:propagation} as the sensitivity of the reported uncertainty to the assumption.
+
+\subsection{The classification stability score}
+
+\Cref{sec:noise} treats the classified indices separately because they are nonlinear at the thresholds. For each task I ask how many noise standard deviations its scores sit from the nearest classification cut-off, and convert that distance into a probability that the task keeps its class under re-framing. With normalised importance weight $\tilde{\omega}_{j,t}$ and task-level noise standard deviations $\sigma^{\mathrm{sub}}_g$ and $\sigma^{\mathrm{comp}}_g$ estimated from the same four meaning-preserving conditions, the occupation-level stability score is
+\begin{equation}\label{eq:stability}
+S_j \;=\; \sum_{t \in T_j} \tilde{\omega}_{j,t}\,
+\Phi\!\left( \min\!\left\{
+\frac{\bigl| s^{\mathrm{sub}}_{j,t} - \theta^{\mathrm{sub}} \bigr|}
+     {\sigma^{\mathrm{sub}}_{g(j)}},\;
+\frac{\bigl| s^{\mathrm{comp}}_{j,t} - \theta^{\mathrm{comp}} \bigr|}
+     {\sigma^{\mathrm{comp}}_{g(j)}}
+\right\} \right),
+\end{equation}
+with $\Phi$ the standard normal cdf, so that $S_j$ reads as the importance-weighted probability that an occupation's task content keeps its class. A task exactly on a threshold contributes $\Phi(0) = 0.5$ and one two noise standard deviations clear of it contributes $\Phi(2) \approx 0.98$. The reporting landmark I flag against, $S_j < 0.75$, therefore marks an occupation whose importance-weighted task mass sits on average around two-thirds of a standard deviation from the nearest cut-off, roughly the point at which a task is about as likely as not to be boundary-adjacent.
+
+The landmark never binds. No occupation and no minor group falls below it, so there is no flagged set to compare against an unflagged one and no set of occupations for the headline differential to be reported with and without. What the held-out boundary stratum can be used for is the weaker check reported in \cref{sec:fragility}: boundary-proximate occupations flip class across the meaning-preserving variants at 55.0\% against 6.0\% for the randomly drawn ones, so the construction locates instability where it should, and excluding minor groups by average stability leaves the classified gap unchanged to the fourth decimal place at every cutoff up to 0.85. I record \cref{eq:stability} because a null diagnostic is still a diagnostic, and because the reason it is null, that the occupations which do flip carry small and regionally similar employment shares, is itself part of why the classified gap behaves as \cref{sec:fragility} describes.
+
+
+\subsection{Cross-model arm}
+
+The \cref{cor:crossmodel} and \cref{cor:affine} tests are reported in the main text rather than here, because the cross-model result is a finding and not a robustness annexe. \Cref{tab:crossmodel} gives the differential and the mean occupation-level bias under the alternative provider and the alternative tier, together with the correlation of that bias with the cross-region employment-share gap, which is the empirical analogue of the surviving term in \cref{eq:prop1}. \Cref{tab:crossmodelstd} gives the same differentials in standard-deviation units and in employment-weighted percentile points, which is where the affine component of the disagreement is removed.

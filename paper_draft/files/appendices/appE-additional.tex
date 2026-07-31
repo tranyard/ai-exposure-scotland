@@ -1,0 +1,50 @@
+\section{Additional Results}\label{app:additional}
+
+\subsection*{Measurement-error benchmark for the wage gradient}
+
+Exposure enters the wage regression at the SOC minor-group level, so every worker in a minor group carries the same score and the measurement error is grouped and heteroskedastic across occupational families. The classical errors-in-variables formula $\widehat{\beta}^{\mathrm{EIV}}_1 = \widehat{\beta}^{\mathrm{OLS}}_1 / (1 - \widehat{\lambda})$, with reliability complement $\lambda = \sigma^2_u / \Var(E_j)$ and $\sigma^2_u = \widehat{\sigma}^2_{g(j)} / 10^4$, assumes independent homoskedastic error per observation and so mis-states the correction here. The violation runs in the direction that overstates it, so I report the classical figure as an upper benchmark on the attenuation rather than as the correction itself.
+
+The formula is also a single-regressor result, which is why it cannot be read off term by term for the interaction. The product regressor $E_{j(i)} \times \Scot_i$ inherits the measurement error $u_j \Scot_i$, whose variance is $\sigma^2_u$ in Scotland and zero in the rest of the UK: no single reliability describes it, and because $E$ and $E \times \Scot$ are correlated the attenuation of $\beta_1$ and $\beta_3$ is entangled rather than separable. The correction nonetheless follows once $\beta_3$ is read as the gap between the rUK exposure slope, $\beta_1$, and the Scottish one, $\beta_1 + \beta_3$. Each is a single mismeasured regressor within its own region and attenuates by that region's reliability; since $\sigma^2_u$ is a property of the shared occupation score and $\Var(E)$ differs across regions only through employment composition, the two reliabilities are equal to a close approximation and the common factor $1/(1 - \widehat{\lambda})$ carries the interaction as well. This is the same assumption the $\beta_1$ correction already makes, so I apply it to both.
+
+\subsection*{Attenuation under the full specification}
+
+\Cref{eq:A9} computes the reliability on the total cross-occupation variation in $E$, but \cref{eq:wage} conditions on industry and year fixed effects and the worker controls, and those absorb part of that variation. By the Frisch--Waugh--Lovell theorem the coefficient on $\tilde{E}$ equals the simple regression of the residualised outcome on the residualised regressor. The measurement error is orthogonal to the controls by assumption, so residualising $\tilde{E}$ on the control set $Z$ leaves $\varrho + u$, where $\varrho$ is the population residual from projecting $E$ on $Z$, and applying \cref{eq:A9} to that regression gives
+\begin{equation}\label{eq:eivpartial}
+\plim \widehat{\beta}^{\mathrm{OLS}}_1
+= \beta_1 \cdot \frac{\Var(\varrho)}{\Var(\varrho) + \sigma^2_u} .
+\end{equation}
+The effective reliability is therefore computed on the residual rather than the total variation in exposure, and any control that explains part of $E$ strictly worsens the attenuation. This runs against the grouped-error violation noted above, which pulls the other way by overstating the correction, and the two are recorded here because neither is large enough to matter at $\widehat{\lambda} = 0.016$: the reported figure is an upper benchmark on an attenuation that is negligible under either departure.
+
+\begin{table}[h]
+\centering
+\caption{Scoring measurement error in the wage gradient: OLS and the classical benchmark}
+\label{tab:eiv}
+\small
+\begin{tabular}{lccc}
+\toprule
+ & OLS & EIV benchmark & SE (OLS) \\
+\midrule
+Exposure ($\beta_E$) & 1.276 & 1.297 & 0.170 \\
+Exposure $\times$ Scotland ($\beta_{E \times \Scot}$) &
+  $-0.300$ & $-0.305$ & 0.065 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.95\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Worker-level regression of \cref{eq:wage} on the pooled 2022--2025 APS, $N = 176{,}444$, weighted by the APS income weight, with industry and year fixed effects and standard errors clustered by occupation, the level at which the exposure regressor varies; the occupation $\times$ region figure of 0.226 on the Scotland interaction is reported in \cref{sec:wages} as a comparison. The EIV benchmark applies $1/(1 - \widehat{\lambda})$ with $\widehat{\lambda} = 0.016$ to both the exposure slope and the interaction, the latter under the equal-reliability argument in the text.
+\end{minipage}
+\end{table}
+
+\cref{tab:eiv} reports the benchmark. The reliability complement is small ($\lambda = 0.016$), because the between-occupation variation in exposure dwarfs the scoring noise. The benchmark nudges the exposure slope up by 1.6\%, from 1.276 to 1.297, and the interaction by the same factor, from $-0.300$ to $-0.305$. The correction is immaterial even under an estimator whose violated assumptions overstate it, so the grouped structure of the measurement error cannot rescue an attenuation this small.
+
+
+%\subsection*{Why the coarser cluster gives the smaller standard error}
+
+%Clustering by occupation gives a standard error of 0.065 on the Scotland interaction against 0.226 under occupation $\times$ region clustering, and the coarser level returning the \emph{smaller} figure is not an anomaly. In the cluster-robust sandwich the middle matrix accumulates $g_c = \sum_{i \in c} \tilde{x}_i \hat{u}_i$ over clusters, with $\tilde{x}$ the regressor residualised on the remaining covariates. For an occupation cluster $k$ the score splits as $g_k = g_{k,\Scot} + g_{k,\rUK}$, so
+%\begin{equation}\label{eq:clustsplit}
+%\E\bigl[ g_k g_k' \bigr]
+%= \E\bigl[ g_{k,\Scot} g_{k,\Scot}' \bigr]
+%+ \E\bigl[ g_{k,\rUK} g_{k,\rUK}' \bigr]
+%+ 2\, \E\bigl[ g_{k,\Scot} g_{k,\rUK}' \bigr] ,
+%\end{equation}
+%whereas occupation $\times$ region clustering retains only the first two terms. For the interaction coefficient the residualised regressor loads with opposite signs on the two regions within an occupation, so a shock common to the occupation enters $g_{k,\Scot}$ and $g_{k,\rUK}$ with opposite signs and the cross term in \cref{eq:clustsplit} is negative. Occupation clusters nest occupation $\times$ region clusters and are the appropriate level; the finer clustering treats the identical score on the two sides of the border as two independent regressors and discards exactly the cross-region error covariance that the interaction contrast nets out.
