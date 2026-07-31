@@ -1,28 +1,19 @@
-# =====================================================================
-# 16_comparators.R  —  NEW: regional comparators (zero API cost)
-#
-# The headline compares Scotland with rUK, but rUK includes London,
-# whose concentration of high-exposure professional and financial
-# occupations plausibly drives much of the negative gap. This script:
-#   1. Recomputes the continuous index for Scotland / London /
-#      rUK-ex-London and reports all pairwise gaps.
-#   2. Ranks every GOR (plus Scotland) on the continuous index — the
-#      "where does Scotland sit in the UK league table" exhibit.
-#   3. Decomposes the Scotland vs rUK-ex-London gap by SOC3.
-# Requires the updated 07 (aps_comparator_pool.csv, aps_gor_pool.csv).
-# =====================================================================
+# Regional comparators. rUK includes London, whose concentration of
+# high-exposure professional and financial occupations plausibly drives
+# much of the negative gap, so this recomputes the continuous index for
+# Scotland / London / rUK-ex-London, ranks every GOR on it, and
+# decomposes the Scotland vs rUK-ex-London gap by SOC3.
 source(here::here("R", "00_config.R"))
 
 cmp_f <- file.path(PATHS$cache, "aps_comparator_pool.csv")
 gor_f <- file.path(PATHS$cache, "aps_gor_pool.csv")
 if (!file.exists(cmp_f))
-  stop("aps_comparator_pool.csv missing — run the updated 07_aps_employment.R ",
+  stop("aps_comparator_pool.csv missing - run 07_aps_employment.R ",
        "(and check GOR9D is on the APS file).", call. = FALSE)
 
 uk <- read_csv(file.path(PATHS$cache, "uk_soc3_scores.csv"), show_col_types = FALSE) |>
   mutate(soc_uk = as.character(soc_uk))
 
-# ---- 1. Scotland / London / rUK-ex-London ------------------------------
 cmp <- read_csv(cmp_f, show_col_types = FALSE) |>
   mutate(soc_uk = as.character(soc_uk)) |>
   inner_join(uk, by = "soc_uk")
@@ -50,10 +41,9 @@ gaps <- tibble(
              pairgap("Scotland", "London", "S_hat"),
              pairgap("London", "rUK_exLondon", "S_hat")))
 save_csv(gaps, file.path(PATHS$tables, "comparator_gaps.csv"))
-message("comparator gaps (continuous, max operator):\n",
-        paste(sprintf("  %s: %+.4f", gaps$contrast, gaps$dE_bar), collapse = "\n"))
+message("comparator gaps (continuous, max operator): ",
+        paste(sprintf("%s %+.4f", gaps$contrast, gaps$dE_bar), collapse = " | "))
 
-# ---- 2. GOR league table ------------------------------------------------
 if (file.exists(gor_f)) {
   gor <- read_csv(gor_f, show_col_types = FALSE) |>
     mutate(soc_uk = as.character(soc_uk)) |>
@@ -63,11 +53,10 @@ if (file.exists(gor_f)) {
     arrange(desc(E_bar)) |>
     mutate(rank = row_number())
   save_csv(gor, file.path(PATHS$tables, "gor_ranking.csv"))
-  message("GOR ranking (continuous index): Scotland is rank ",
+  message("GOR ranking: Scotland is rank ",
           gor$rank[gor$gor_lab == "Scotland"], " of ", nrow(gor))
 }
 
-# ---- 3. Decomposition: Scotland vs rUK-ex-London ------------------------
 wide <- cmp |>
   select(soc_uk, comparator, sigma, E_uk, classification) |>
   filter(comparator %in% c("Scotland", "rUK_exLondon")) |>
@@ -81,11 +70,11 @@ dec <- wide |>
   select(soc_uk, classification, E_uk, sigma_Scotland = Scotland,
          sigma_rUK_exLondon = rUK_exLondon, dsigma, contribution)
 save_csv(dec, file.path(PATHS$tables, "comparator_decomposition.csv"))
-hl_f <- file.path(PATHS$tables, "region_indices_continuous.csv")
+hl_f <- table_csv("region_indices_continuous")
 hl_gap <- if (file.exists(hl_f)) {
   read_csv(hl_f, show_col_types = FALSE) |>
     filter(operator == "max") |> pull(gap)
 } else NA_real_
-message(sprintf("Scotland vs rUK-ex-London gap: %+.4f (decomposition sum %+.4f) | vs full rUK: %+.4f",
+message(sprintf("Scotland vs rUK-ex-London: %+.4f (decomposition sum %+.4f) | vs full rUK: %+.4f",
                 gaps$dE_bar[gaps$contrast == "Scotland - rUK_exLondon"],
                 sum(dec$contribution), hl_gap))
