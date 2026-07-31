@@ -1,27 +1,26 @@
-# =====================================================================
-# 07_aps_employment.R  —  APS employment weights (individual microdata)
-#
-# CHANGES:
-#   1. COUNTRY fix: Scotland = codes {3, 4}. Code 4 (north of the
-#      Caledonian Canal) was previously being assigned to rUK.
-#   2. GOR9D retained -> comparator pools (Scotland / London /
-#      rUK-ex-London, and per-GOR) for 16_comparators.R.
-#   3. Unweighted respondent counts per cell -> aps_cell_counts.csv,
-#      so precision claims are grounded, and thin cells can be flagged
-#      in the FD employment regressions.
-#   4. Person bootstrap of the within-region employment shares
-#      (stratified by region x year, BOOT$B replicates) ->
-#      aps_sigma_boot.csv, composed with scoring noise in 12.
-# =====================================================================
+# APS employment weights from the person-level microdata: pooled and
+# per-year SOC3 x region shares, respondent counts, comparator pools,
+# occupation x industry pool, a person bootstrap of the shares, and the
+# worker-level wage extract used by 15 and 20.
 source(here::here("R", "00_config.R"))
 
 V <- APS$vars
 
+# GOR9D is read as character, so the APS negative sentinels arrive as
+# strings. The devolved nations are coded W/S/N99999999: these are valid
+# whole-nation region codes (GOR9D only subdivides England), so they must
+# survive as their own FE levels.
+clean_gor <- function(x) {
+  x <- trimws(as.character(x))
+  x[x %in% c("", "-1", "-8", "-9", "NA", "N/A", ".")] <- NA_character_
+  x
+}
+
 aps_micro_files <- function() {
-  fs <- list.files(PATHS$aps, pattern = "^aps_micro_.*\\.csv$", full.names = TRUE)
+  fs <- list.files(PATHS$aps, pattern = "^aps_.*\\.csv$", full.names = TRUE)
   if (length(fs) == 0)
     stop("No APS microdata found. Put one person-level CSV per wave in ",
-         PATHS$aps, " named aps_micro_<year>.csv (e.g. aps_micro_2022.csv).",
+         PATHS$aps, " named aps_<year>.csv (e.g. aps_2022.csv).",
          call. = FALSE)
   fs
 }
@@ -35,30 +34,56 @@ read_wave <- function(f) {
     stop("In ", basename(f), " missing expected columns: ",
          paste(miss, collapse = ", "),
          "\n  -> fix the names in APS$vars (00_config.R).", call. = FALSE)
+  # Optional columns are not caught above: bind_rows silently NA-fills a
+  # wave that lacks one, which is the classic cause of a geography
+  # variable being ~1/n_waves missing overall. Surface it at read time.
+  opt <- unlist(V[c("gor", "industry", "hourpay", "inc_weight",
+                    "age", "sex", "ft", "education", "public")])
+  opt <- opt[!is.na(opt)]
+  opt_miss <- opt[!opt %in% names(d)]
+  if (length(opt_miss))
+    message("  ", basename(f), ": optional column(s) absent, NA-filled on pooling: ",
+            paste(opt_miss, collapse = ", "))
+  if (!is.na(V$gor) && !V$gor %in% names(d)) {
+    alt <- grep("GOR", names(d), value = TRUE, ignore.case = TRUE)
+    if (length(alt))
+      message("    ", basename(f), ": '", V$gor, "' absent but GOR-like column(s) present: ",
+              paste(alt, collapse = ", "))
+  }
   d
 }
 micro <- purrr::map_dfr(aps_micro_files(), read_wave)
 
-# ---- Verification aid: weighted country composition -------------------
-# Scotland (codes 3 + 4 combined) should carry roughly 8% of UK person
-# weight, with code 4 a small fraction of that. If either looks wrong,
-# fix APS$codes$scotland before trusting any split.
+# Scotland (codes 3 + 4) should carry roughly 8% of UK person weight.
 ctab <- micro |>
   mutate(country = aps_num(.data[[V$country]]),
          w = aps_num(.data[[V$weight]])) |>
   filter(!is.na(country), !is.na(w), w > 0) |>
   count(country, wt = w, name = "w") |>
   mutate(share = w / sum(w))
-message("weighted COUNTRY composition (Scotland = codes ",
-        paste(APS$codes$scotland, collapse = "+"), ", expect ~8% combined):\n",
-        paste(sprintf("  code %s: %.1f%%", ctab$country, 100 * ctab$share),
-              collapse = "\n"))
-message(sprintf("  -> Scotland combined: %.1f%%",
-        100 * sum(ctab$share[ctab$country %in% APS$codes$scotland])))
+message(sprintf("weighted Scotland share of UK person weight: %.1f%%",
+                100 * sum(ctab$share[ctab$country %in% APS$codes$scotland])))
 
-# ---- Analysis base: employed persons ---------------------------------
-has_gor <- V$gor %in% names(micro)
-if (!has_gor) message("NOTE: ", V$gor, " not on file — comparator pools skipped.")
+# Region arrives under different names across waves (GOR9D to 2024,
+# GOR9DCENSUS2021 in 2025) with identical values; accept either and
+# coalesce, or the renamed wave is NA-filled and lost downstream.
+gor_names   <- unique(c(V$gor, "GOR9DCENSUS2021"))
+gor_present <- intersect(gor_names, names(micro))
+has_gor     <- length(gor_present) > 0
+if (has_gor) {
+  g <- rep(NA_character_, nrow(micro))
+  for (cn in gor_present) g <- dplyr::coalesce(g, clean_gor(micro[[cn]]))
+  micro$gor <- g
+} else {
+  micro$gor <- NA_character_
+  message("no region column on file - comparator pools skipped.")
+}
+has_ind <- V$industry %in% names(micro)
+if (!has_ind) message(V$industry, " not on file - industry decomposition pool skipped.")
+has_edu <- !is.null(V$education) && V$education %in% names(micro)
+has_pub <- !is.null(V$public)    && V$public    %in% names(micro)
+if (!has_edu) message("education variable not on file - omitted from the wage extract.")
+if (!has_pub) message("public-sector variable not on file - omitted from the wage extract.")
 
 base <- micro |>
   mutate(
@@ -67,10 +92,10 @@ base <- micro |>
     soc_num = aps_num(.data[[V$soc]]),
     year    = as.integer(aps_num(.data[[V$year]])),
     w       = aps_num(.data[[V$weight]]),
-    gor     = if (has_gor) as.character(.data[[V$gor]]) else NA_character_) |>
+    industry = if (has_ind) aps_num(.data[[V$industry]]) else NA_real_) |>
   filter(ilo == APS$codes$in_employment) |>
   mutate(
-    region = region_of(country),                       ## CHANGED (3+4)
+    region = region_of(country),
     soc_uk = substr(as.character(as.integer(soc_num)), 1, APS$soc_level)) |>
   filter(!is.na(region), !is.na(soc_uk), nzchar(soc_uk),
          !is.na(w), w > 0, year %in% APS$years)
@@ -84,12 +109,10 @@ if (!any(base$region == "Scotland")) {
             call. = FALSE)
 }
 
-# ---- Year-level panel (region x soc x year) ---------------------------
 aps_year <- base |>
   group_by(soc_uk, region, year) |>
   summarise(employment = sum(w), .groups = "drop")
 
-# ---- Pooled across waves ----------------------------------------------
 aps_pool <- aps_year |>
   group_by(soc_uk, region) |>
   summarise(l_pool = sum(employment), .groups = "drop") |>
@@ -99,15 +122,13 @@ aps_pool <- aps_year |>
 
 stopifnot(all(abs(tapply(aps_pool$sigma, aps_pool$region, sum) - 1) < 1e-6))
 message("APS pooled cells: ", nrow(aps_pool),
-        " | regions: ", paste(sort(unique(aps_pool$region)), collapse = ", "),
         " | waves: ", paste(sort(unique(aps_year$year)), collapse = ", "))
 
 save_csv(aps_pool, file.path(PATHS$cache, "aps_pool.csv"))
 save_csv(aps_year, file.path(PATHS$cache, "aps_year.csv"))
 
-# ---- NEW (3): unweighted respondent counts per cell --------------------
 # n_unw is the pooled respondent count; n_min_year the thinnest single
-# wave (matters for the first-difference employment regressions).
+# wave, which matters for the first-difference employment regressions.
 cell_counts <- base |>
   group_by(soc_uk, region, year) |>
   summarise(n = n(), .groups = "drop") |>
@@ -115,23 +136,32 @@ cell_counts <- base |>
   summarise(n_unw = sum(n), n_min_year = min(n), n_years = n(), .groups = "drop")
 save_csv(cell_counts, file.path(PATHS$cache, "aps_cell_counts.csv"))
 message("thin cells (pooled n_unw < 30): ",
-        sum(cell_counts$n_unw < 30), " of ", nrow(cell_counts),
-        " | Scotland cells with n_min_year < 10: ",
-        sum(cell_counts$n_min_year < 10 & cell_counts$region == "Scotland"))
+        sum(cell_counts$n_unw < 30), " of ", nrow(cell_counts))
 
-# ---- NEW (2): comparator pools (Scotland / London / rUK-ex-London) -----
 if (has_gor) {
+  # Structural missingness (one wave lacking or renaming the column) shows
+  # as a near-100% wave beside near-0% waves; flat missingness is genuine
+  # non-response. n_levels flags a coding mismatch against london_gor.
+  gor_by_year <- base |>
+    filter(region == "rUK") |>
+    group_by(year) |>
+    summarise(n = n(), miss_share = mean(is.na(gor)),
+              n_levels = dplyr::n_distinct(gor[!is.na(gor)]), .groups = "drop")
+  bad_waves <- gor_by_year$year[gor_by_year$miss_share > 0.5]
+  if (length(bad_waves))
+    warning("GOR is >50% missing in wave(s) ", paste(bad_waves, collapse = ", "),
+            " but present elsewhere: the column is probably absent or renamed ",
+            "in those files and NA-filled on pooling.", call. = FALSE)
+  london_n <- sum(base$gor == APS$codes$london_gor, na.rm = TRUE)
+  if (london_n == 0)
+    warning("No rows match london_gor = '", APS$codes$london_gor,
+            "'. Set APS$codes$london_gor to the code this file uses.",
+            call. = FALSE)
   base_cmp <- base |>
     mutate(comparator = case_when(
       region == "Scotland"            ~ "Scotland",
       gor == APS$codes$london_gor     ~ "London",
       TRUE                            ~ "rUK_exLondon"))
-  # Verification aid: weighted comparator composition.
-  wtab <- base_cmp |> count(comparator, wt = w, name = "w") |>
-    mutate(share = w / sum(w))
-  message("weighted comparator composition (London expect ~13-15% of employment):\n",
-          paste(sprintf("  %s: %.1f%%", wtab$comparator, 100 * wtab$share),
-                collapse = "\n"))
 
   cmp_pool <- base_cmp |>
     group_by(soc_uk, comparator) |>
@@ -152,12 +182,26 @@ if (has_gor) {
   save_csv(gor_pool, file.path(PATHS$cache, "aps_gor_pool.csv"))
 }
 
-# ---- NEW (4): person bootstrap of the within-region shares -------------
-# Resamples persons with replacement within region x year strata and
-# recomputes the pooled weighted shares. Captures APS sampling error in
-# sigma — the component the Monte Carlo previously omitted entirely.
-# Runtime: O(B x n); ~1-2 min at B = 500 on the pooled file.
-message("bootstrapping APS shares (B = ", BOOT$B, ") ...")
+# SOC3 x SIC-section x region shares, within region, for the industry-mix
+# vs within-industry decomposition in 18.
+if (has_ind) {
+  occind_pool <- base |>
+    filter(!is.na(industry)) |>
+    group_by(soc_uk, industry, region) |>
+    summarise(l_pool = sum(w), .groups = "drop") |>
+    group_by(region) |>
+    mutate(sigma = l_pool / sum(l_pool)) |>
+    ungroup()
+  save_csv(occind_pool, file.path(PATHS$cache, "aps_occind_pool.csv"))
+  ind_miss <- base |>
+    summarise(s = sum(w[is.na(industry)]) / sum(w)) |> pull(s)
+  message(sprintf("occ x industry pool: %d cells | %.2f%% of employment weight lacks industry",
+                  nrow(occind_pool), 100 * ind_miss))
+}
+
+# Person bootstrap: resample within region x year strata and recompute the
+# pooled weighted shares, giving the APS sampling component of sigma that
+# 12 composes with the scoring noise.
 set.seed(SEED + 7L)
 cells   <- sort(unique(base$soc_uk))
 boot_df <- map_dfr(sort(unique(base$region)), function(r) {
@@ -167,7 +211,7 @@ boot_df <- map_dfr(sort(unique(base$region)), function(r) {
   reps <- map_dfr(seq_len(BOOT$B), function(b) {
     idx <- unlist(lapply(strata, \(i) i[sample.int(length(i), length(i), replace = TRUE)]),
                   use.names = FALSE)
-    tot <- rowsum(br$w[idx], cells[cell_i[idx]])       # weighted cell totals
+    tot <- rowsum(br$w[idx], cells[cell_i[idx]])
     tibble(rep = b, soc_uk = rownames(tot),
            sigma_b = as.numeric(tot) / sum(tot))
   })
@@ -176,21 +220,10 @@ boot_df <- map_dfr(sort(unique(base$region)), function(r) {
 })
 save_csv(boot_df, file.path(PATHS$cache, "aps_sigma_boot.csv"))
 
-# Quick summary of the sampling se this implies for each region's shares.
-boot_se <- boot_df |>
-  group_by(region, soc_uk) |>
-  summarise(se_sigma = sd(sigma_b), .groups = "drop") |>
-  group_by(region) |>
-  summarise(median_se = median(se_sigma), max_se = max(se_sigma), .groups = "drop")
-print(boot_se)
-
-# =====================================================================
-# Worker-level wage extract for 15_wage_eiv.R
-# =====================================================================
 wage_need <- unlist(V[c("hourpay", "inc_weight", "age", "sex", "ft", "industry")])
 wage_miss <- setdiff(wage_need, names(micro))
 if (length(wage_miss)) {
-  message("Wage extract skipped — missing: ", paste(wage_miss, collapse = ", "))
+  message("Wage extract skipped - missing: ", paste(wage_miss, collapse = ", "))
 } else {
   wages <- micro |>
     mutate(
@@ -203,16 +236,16 @@ if (length(wage_miss)) {
       sex     = aps_num(.data[[V$sex]]),
       ft      = aps_num(.data[[V$ft]]),
       industry = aps_num(.data[[V$industry]]),
+      education = if (has_edu) as.character(.data[[V$education]]) else NA_character_,
+      public    = if (has_pub) aps_num(.data[[V$public]])        else NA_real_,
       year    = as.integer(aps_num(.data[[V$year]]))) |>
     filter(ilo == APS$codes$in_employment,
            !is.na(hp), hp > 0, !is.na(piwt), piwt > 0,
            !is.na(soc_num), !is.na(sex), !is.na(ft), !is.na(industry)) |>
-    mutate(region = region_of(country),                 ## CHANGED (3+4)
+    mutate(region = region_of(country),
            soc_uk = substr(as.character(as.integer(soc_num)), 1, APS$soc_level)) |>
-    transmute(ln_wage = log(hp), soc_uk, region, age, sex, ft, industry,
-              year, piwt)
+    transmute(ln_wage = log(hp), soc_uk, region, gor, age, sex, ft, industry,
+              year, piwt, education, public)
   save_csv(wages, file.path(PATHS$cache, "aps_worker_wages.csv"))
-  message("APS wage subsample: ", nrow(wages), " workers | ",
-          "weighted mean hourly pay: ",
-          sprintf("%.2f", weighted.mean(exp(wages$ln_wage), wages$piwt)))
+  message("APS wage subsample: ", nrow(wages), " workers")
 }
