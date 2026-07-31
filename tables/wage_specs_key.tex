@@ -1,0 +1,54 @@
+\begin{threeparttable}
+\small
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{l cccc}
+\toprule
+ & (1) & (2) & (3) & (4) \\
+ & Baseline & $+$Controls & $+$Region & $+$London \\
+ & (full) &  & FE & slope \\
+\midrule
+Exposure $E$ & $1.276^{***}$ & $0.941^{***}$ & $0.913^{***}$ & $0.884^{***}$ \\
+ & $(0.170)$ & $(0.144)$ & $(0.143)$ & $(0.143)$ \\
+\addlinespace[2pt]
+Exposure $\times$ Scotland & $-0.300^{***}$ & $-0.269^{***}$ & $-0.216^{***}$ & $-0.187^{***}$ \\
+ & $(0.065)$ & $(0.062)$ & $(0.056)$ & $(0.058)$ \\
+\addlinespace[2pt]
+Scotland & $0.204^{***}$ & $0.173^{***}$ &  & $0.138^{***}$ \\
+ & $(0.044)$ & $(0.042)$ &  & $(0.040)$ \\
+\addlinespace[2pt]
+Exposure $\times$ London &  &  &  & $0.354^{***}$ \\
+ &  &  &  & $(0.059)$ \\
+\addlinespace[2pt]
+London &  &  &  & $-0.118^{***}$ \\
+ &  &  &  & $(0.039)$ \\
+\addlinespace[2pt]
+\midrule
+Demographic controls\tnote{a} & Yes & Yes & Yes & Yes \\
+Added controls\tnote{b} &  & Yes & Yes & Yes \\
+Industry FE & Yes & Yes & Yes & Yes \\
+Year FE & Yes & Yes & Yes & Yes \\
+Region (GOR) FE &  &  & Yes &  \\
+Clustering & Occ. & Occ. & Occ. & Occ. \\
+Sample & Full & GOR & GOR & GOR \\
+\addlinespace[2pt]
+Observations & 176,444 & 176,024 & 176,024 & 176,024 \\
+Within $R^2$ & 0.174 & 0.235 & 0.226 & 0.243 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}[flushleft]
+\footnotesize
+\item Dependent variable: log gross hourly pay. Worker-level regressions
+of \cref{eq:wage} on the pooled APS 2022--2025, weighted by the APS income
+weight. Standard errors, clustered by occupation (the level at which the
+exposure score varies), in parentheses. Column (1) is the full-sample
+baseline; columns (2)--(4) add the controls of note b and restrict to
+observations with an observed regional code, so column (2) is the
+like-for-like comparator for the London treatments in (3)--(4). The
+Scotland main effect is absorbed by the regional fixed effects in column
+(3) and is therefore not separately estimable.
+\item[a] Age, age$^2$, sex, and full-time/part-time status.
+\item[b] Highest qualification (education) and a public-sector indicator.
+\item[] $^{*}\,p<0.1$, $^{**}\,p<0.05$, $^{***}\,p<0.01$.
+\end{tablenotes}
+\end{threeparttable}

@@ -1,0 +1,51 @@
+\begin{table}
+\centering
+\begin{talltblr}[         %% tabularray outer open
+entry=none,label=none,
+note{}={* p \num{< 0.1}, ** p \num{< 0.05}, *** p \num{< 0.01}},
+]                     %% tabularray outer close
+{                     %% tabularray inner open
+colspec={Q[]Q[]Q[]Q[]Q[]Q[]Q[]},
+hline{2}={1-7}{solid, black, 0.05em},
+hline{24}={1-7}{solid, black, 0.05em},
+hline{1}={1-7}{solid, black, 0.08em},
+hline{35}={1-7}{solid, black, 0.08em},
+column{2-7}={}{halign=c},
+column{1}={}{halign=l},
+}                     %% tabularray inner close
+& s1 baseline (full, occ cl.) & s1 occ x region cl. (legacy) & s1r baseline (GOR sample) & s2 +region FE & s3 ex-London & s4 +London slope \\
+E & \num{1.276}*** & \num{1.276}*** & \num{1.297}*** & \num{1.248}*** & \num{1.242}*** & \num{1.217}*** \\
+& (\num{0.170}) & (\num{0.170}) & (\num{0.174}) & (\num{0.171}) & (\num{0.170}) & (\num{0.173}) \\
+Scot & \num{0.204}*** & \num{0.204} & \num{0.221}*** &  & \num{0.179}*** & \num{0.182}*** \\
+& (\num{0.044}) & (\num{0.140}) & (\num{0.045}) &  & (\num{0.043}) & (\num{0.044}) \\
+age & \num{0.051}*** & \num{0.051}*** & \num{0.052}*** & \num{0.051}*** & \num{0.050}*** & \num{0.051}*** \\
+& (\num{0.004}) & (\num{0.004}) & (\num{0.004}) & (\num{0.004}) & (\num{0.004}) & (\num{0.004}) \\
+I(I(age\textasciicircum{}2)) & \num{-0.001}*** & \num{-0.001}*** & \num{-0.001}*** & \num{-0.001}*** & \num{-0.001}*** & \num{-0.001}*** \\
+& (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) & (\num{0.000}) \\
+sex2 & \num{-0.120}*** & \num{-0.120}*** & \num{-0.123}*** & \num{-0.122}*** & \num{-0.127}*** & \num{-0.122}*** \\
+& (\num{0.016}) & (\num{0.015}) & (\num{0.016}) & (\num{0.016}) & (\num{0.016}) & (\num{0.016}) \\
+ft2 & \num{-0.094}*** & \num{-0.094}*** & \num{-0.096}*** & \num{-0.094}*** & \num{-0.086}*** & \num{-0.092}*** \\
+& (\num{0.018}) & (\num{0.017}) & (\num{0.018}) & (\num{0.018}) & (\num{0.017}) & (\num{0.018}) \\
+ft3 & \num{-0.000} & \num{-0.000} & \num{0.001} & \num{0.028} & \num{0.035} & \num{0.031} \\
+& (\num{0.217}) & (\num{0.215}) & (\num{0.214}) & (\num{0.211}) & (\num{0.211}) & (\num{0.217}) \\
+ft4 & \num{-1.288}*** & \num{-1.288}*** & \num{-1.284}*** & \num{-1.246}*** & \num{-1.263}*** & \num{-1.269}*** \\
+& (\num{0.041}) & (\num{0.039}) & (\num{0.041}) & (\num{0.040}) & (\num{0.041}) & (\num{0.040}) \\
+E × Scot & \num{-0.300}*** & \num{-0.300} & \num{-0.328}*** & \num{-0.265}*** & \num{-0.225}*** & \num{-0.232}*** \\
+& (\num{0.065}) & (\num{0.226}) & (\num{0.066}) & (\num{0.061}) & (\num{0.062}) & (\num{0.063}) \\
+london &  &  &  &  &  & \num{-0.110}** \\
+&  &  &  &  &  & (\num{0.049}) \\
+E × london &  &  &  &  &  & \num{0.394}*** \\
+&  &  &  &  &  & (\num{0.073}) \\
+Num.Obs. & \num{352888} & \num{352888} & \num{264510} & \num{264510} & \num{247526} & \num{264510} \\
+R2 & \num{0.295} & \num{0.295} & \num{0.296} & \num{0.311} & \num{0.290} & \num{0.307} \\
+R2 Adj. & \num{0.295} & \num{0.295} & \num{0.296} & \num{0.311} & \num{0.290} & \num{0.307} \\
+R2 Within & \num{0.174} & \num{0.174} & \num{0.176} & \num{0.172} & \num{0.178} & \num{0.189} \\
+R2 Within Adj. & \num{0.174} & \num{0.174} & \num{0.176} & \num{0.172} & \num{0.178} & \num{0.189} \\
+AIC & \num{466957.2} & \num{466957.2} & \num{352040.2} & \num{347444.2} & \num{323122.1} & \num{349213.4} \\
+BIC & \num{467312.7} & \num{467312.7} & \num{352386.3} & \num{347895.1} & \num{323465.9} & \num{349580.4} \\
+RMSE & \num{0.47} & \num{0.47} & \num{0.47} & \num{0.47} & \num{0.46} & \num{0.47} \\
+FE: industry & X & X & X & X & X & X \\
+FE: year & X & X & X & X & X & X \\
+FE: gor\_lab &  &  &  & X &  &  \\
+\end{talltblr}
+\end{table}
