@@ -1,10 +1,3 @@
-# =====================================================================
-# 05_aggregate_occupation.R
-# CHANGES: adds primary-mode vote shares (PM_sub_j, PM_comp_j) and the
-# threshold-free classification_pm. primary_mode was elicited on every
-# task in the V0 run but never used; it costs nothing and provides a
-# robustness row against the threshold classifier.
-# =====================================================================
 source(here::here("R", "00_config.R"))
 
 aggregate_occupation <- function(scores, task_df, thr = THRESHOLDS$central) {
@@ -37,13 +30,13 @@ aggregate_occupation <- function(scores, task_df, thr = THRESHOLDS$central) {
       E_sat_j  = sum(w * OPERATORS$sat(sub, comp)),
       Sub_j    = sum(w * (sub >= thr["sub"])),
       Comp_j   = sum(w * (comp >= thr["comp"] & sub < thr["sub"])),
-      PM_sub_j  = sum(w * (primary_mode == "substitution")),      ## NEW
-      PM_comp_j = sum(w * (primary_mode == "complementarity")),   ## NEW
+      PM_sub_j  = sum(w * (primary_mode == "substitution")),
+      PM_comp_j = sum(w * (primary_mode == "complementarity")),
       .groups  = "drop"
     ) |>
     mutate(Exp_j = Sub_j + Comp_j,
            classification    = classify_occ(Sub_j, Comp_j),
-           classification_pm = classify_pm(PM_sub_j, PM_comp_j))   ## NEW
+           classification_pm = classify_pm(PM_sub_j, PM_comp_j))
 }
 
 if (file.exists(file.path(PATHS$scores, "task_scores_V0.csv"))) {
@@ -56,8 +49,5 @@ if (file.exists(file.path(PATHS$scores, "task_scores_V0.csv"))) {
   }
   message(nrow(occ), " occupations | central class: ",
           paste(names(table(occ$classification)), table(occ$classification),
-                sep = "=", collapse = " "),
-          " | primary-mode class: ",
-          paste(names(table(occ$classification_pm)), table(occ$classification_pm),
                 sep = "=", collapse = " "))
 }
