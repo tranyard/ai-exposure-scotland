@@ -1,17 +1,13 @@
-# =====================================================================
-# 02_prompt.R  —  Frozen scoring prompt + variant generators
-# The baseline configuration is hashed so the run is
-# near-deterministic and the exact wording is auditable. The hash covers
-# BOTH the system message and the user-message template: a change to
-# either is detectable.
-# Variant scheme =
+# Frozen scoring prompt and variant generators. The hash covers both the
+# system message and the user-message template, so a change to either is
+# detectable.
+# Variants:
 #   V0  baseline (10-year horizon, two scores)          noise reference
 #   V1  5-year horizon                                  estimand sensitivity
-#   V2  criteria in reverse order                      noise: order/anchoring
+#   V2  criteria in reverse order                       noise: order/anchoring
 #   V3  single composite score                          estimand sensitivity
 #   V5  paraphrased rubric (same meaning)               noise: wording
 #   V6  user message reordered (task before occupation) noise: framing
-# =====================================================================
 source(here::here("R", "00_config.R"))
 
 .system_template <- function(horizon = SCORING$horizon_years_baseline,
@@ -64,12 +60,10 @@ source(here::here("R", "00_config.R"))
   )
 }
 
-# --- Paraphrased system message (V5)
-# Meaning-preserving rewording of the baseline: identical horizon,
-# identical two dimensions and scale endpoints, identical six criteria in
-# substance and order, IDENTICAL JSON keys (parsing depends on them).
-# Only the phrasing changes, so V0-vs-V5 differences identify wording
-# sensitivity and nothing else.
+# V5: meaning-preserving rewording of the baseline. Identical horizon,
+# dimensions, scale endpoints, criteria and JSON keys (parsing depends on
+# them); only the phrasing changes, so V0-vs-V5 identifies wording
+# sensitivity alone.
 .system_paraphrase <- function(horizon = SCORING$horizon_years_baseline) {
   year <- SCORING$base_year + horizon
   criteria <- c(
@@ -109,7 +103,6 @@ source(here::here("R", "00_config.R"))
   }
 }
 
-
 variant_spec <- function(variant, model = MODELS$M) {
   stopifnot(variant %in% c("V0", "V1", "V2", "V3", "V5", "V6"))
   switch(variant,
@@ -134,7 +127,7 @@ PROMPT_BASELINE_SYSTEM <- .system_template(SCORING$horizon_years_baseline)
 PROMPT_BASELINE_USER   <- .user_template("<OCCUPATION>", "<TASK>")
 PROMPT_HASH <- digest(paste(PROMPT_BASELINE_SYSTEM, PROMPT_BASELINE_USER,
                             sep = "\n---\n"), algo = "sha256")
-message("baseline prompt SHA-256 (system + user template): ", PROMPT_HASH)
+message("baseline prompt SHA-256: ", PROMPT_HASH)
 writeLines(c(PROMPT_HASH, "", PROMPT_BASELINE_SYSTEM, "",
              "--- user template ---", PROMPT_BASELINE_USER),
            file.path(PATHS$cache, "prompt_baseline.txt"))
