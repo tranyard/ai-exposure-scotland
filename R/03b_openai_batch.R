@@ -1,19 +1,6 @@
-# =====================================================================
-# 03b_openai_batch.R  —  OpenAI Batch API transport
-# Source this AFTER 03_score.R (it reuses .parse_score, .api_key,
-# variant_spec, .user_template, PROMPT_HASH, PATHS, SCORING, read_scores,
-# save_csv, MOCK, .mock_score_tasks defined there / upstream).
-#
-# Why this exists: the baseline OpenAI path in 03_score.R is synchronous
-# (score_sync_chunked). This gives the GPT-4o cross-model arm the same
-# treatment the Anthropic arms get — the 50% Batch discount and a
-# separate, higher enqueued-token limit that sidesteps sync rate limits
-#
-# Output schema is identical to the Anthropic transport:
-#   onet_soc_code, task_id, variant, provider, model, sub, comp,
-#   primary_mode, key_factors, prompt_hash, run_date
-# =====================================================================
-
+# OpenAI Batch API transport. Source after 03_score.R, which defines
+# .parse_score, .api_key, variant_spec, .user_template, PROMPT_HASH, MOCK
+# and .mock_score_tasks. Output schema matches the Anthropic transport.
 
 .openai_params <- function(spec, user) {
   list(model           = spec$model$id,
@@ -25,7 +12,6 @@
 }
 
 .openai_hdr_key <- function() .api_key("openai")
-
 
 .openai_batch_submit <- function(tasks, variant, tag, model = MODELS$Mp) {
   spec  <- variant_spec(variant, model)
@@ -47,7 +33,6 @@
     })
   jsonl <- file.path(PATHS$cache, paste0("batch_input_", tag, ".jsonl"))
   writeLines(req_lines, jsonl)
-  message("built JSONL: ", jsonl, "  (", length(req_lines), " requests)")
 
   up <- httr2::request("https://api.openai.com/v1/files") |>
     httr2::req_auth_bearer_token(.openai_hdr_key()) |>
@@ -55,7 +40,6 @@
                               file = curl::form_file(jsonl)) |>
     httr2::req_retry(max_tries = SCORING$retries + 1) |>
     httr2::req_perform() |> httr2::resp_body_json()
-  message("uploaded input file: ", up$id)
 
   cr <- httr2::request("https://api.openai.com/v1/batches") |>
     httr2::req_auth_bearer_token(.openai_hdr_key()) |>
@@ -67,7 +51,6 @@
   message("batch created: ", cr$id, "  status=", cr$status)
   cr$id
 }
-
 
 .openai_batch_collect <- function(batch_id, variant, tag, model = MODELS$Mp,
                                   poll_seconds = 60) {
@@ -87,8 +70,6 @@
     Sys.sleep(poll_seconds)
   }
 
-
-
   if (identical(st$status, "failed")) {
     reason <- tryCatch(
       paste(vapply(st$errors$data, function(e) e$message %||% "", character(1)),
@@ -99,7 +80,7 @@
          call. = FALSE)
   }
   if ((st$error_file_id %||% "") != "")
-    message("note: some requests errored; error file = ", st$error_file_id,
+    message("some requests errored; error file = ", st$error_file_id,
             " (missing rows carry NA and are handled downstream).")
   if ((st$output_file_id %||% "") == "")
     stop("batch ", batch_id, " ended '", st$status,
@@ -128,15 +109,13 @@
                      prompt_hash = PROMPT_HASH, run_date = as.character(Sys.Date()))
 }
 
-
 .openai_batch_run_one <- function(tasks, variant, tag, model = MODELS$Mp,
                                   poll_seconds = 60) {
   out_f <- file.path(PATHS$scores, paste0("task_scores_", tag, ".csv"))
   id_f  <- file.path(PATHS$cache,  paste0("batch_id_",   tag, ".txt"))
-  if (file.exists(out_f)) { message("already scored: ", out_f); return(read_scores(out_f)) }
+  if (file.exists(out_f)) return(read_scores(out_f))
 
   bid <- if (file.exists(id_f)) {
-    message("resuming OpenAI batch from stored id: ", readLines(id_f)[1])
     readLines(id_f)[1]
   } else {
     b <- .openai_batch_submit(tasks, variant, tag, model)
@@ -148,11 +127,10 @@
   scores
 }
 
-
 openai_batch_run <- function(tasks, variant, tag, model = MODELS$Mp,
                              poll_seconds = 60, max_per_batch = 2000L) {
   out_f <- file.path(PATHS$scores, paste0("task_scores_", tag, ".csv"))
-  if (file.exists(out_f)) { message("already scored: ", out_f); return(read_scores(out_f)) }
+  if (file.exists(out_f)) return(read_scores(out_f))
   if (MOCK) { s <- .mock_score_tasks(tasks, variant, model); save_csv(s, out_f); return(s) }
 
   if (nrow(tasks) <= max_per_batch)
@@ -160,11 +138,9 @@ openai_batch_run <- function(tasks, variant, tag, model = MODELS$Mp,
 
   idx <- split(seq_len(nrow(tasks)),
                ceiling(seq_len(nrow(tasks)) / max_per_batch))
-  message("chunking ", nrow(tasks), " tasks into ", length(idx),
-          " sequential batches of <= ", max_per_batch, " requests.")
   parts <- purrr::imap(idx, function(rows, i) {
     ctag <- sprintf("%s_c%03d", tag, as.integer(i))
-    message("== chunk ", i, "/", length(idx), "  tag=", ctag,
+    message("chunk ", i, "/", length(idx), "  tag=", ctag,
             "  (", length(rows), " requests)")
     .openai_batch_run_one(tasks[rows, , drop = FALSE], variant, ctag,
                           model, poll_seconds)
