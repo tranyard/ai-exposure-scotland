@@ -50,7 +50,7 @@ ai-exposure-scotland/
 │   ├── 00_make_synthetic_data.R  generates fake inputs
 │   └── run_smoke_test.R          runs full pipeline offline with assertions
 │
-├── paper/                        ← LaTeX source
+├── paper/                        ← LaTeX source - download this and compile 
 │   ├── main.tex                  dissertation root
 │   ├── references.bib            Zotero auto-export target
 │   └── ...                       section and appendix files
