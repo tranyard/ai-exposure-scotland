@@ -1,0 +1,52 @@
+% =====================================================================
+%  Scotland versus the Rest:
+%  A Fiscal Investigation into the Comparative AI Exposure of
+%  Scotland and the Rest of the UK
+%
+%  MSc Economics dissertation — SGPE Sponsored Dissertation w/ SFC
+%=====================================================================
+\documentclass[11pt,a4paper]{article}
+
+\newif\ifanonymous
+%\anonymoustrue   Set \anonymousfalse for the SFC copy.
+\anonymousfalse
+
+\input{preamble}
+
+% ---- Metadata -------------------------------------------------------
+\newcommand{\thetitle}{[Working Paper Version] \\ Scotland versus the Rest:\\[0.3em]
+  \large A Fiscal Investigation into the Comparative Exposure of
+  Artificial Intelligence in Scotland and the Rest of the UK}
+
+\newcommand{\examnumber}{B000000}   % TODO: your exam number
+\newcommand{\wordcount}{[TODO: word count]} % texcount output; must be 8,000-10,000
+
+\begin{document}
+
+\input{frontmatter}
+
+%\input{sections/01-introduction}
+\input{sections/02-background}
+\input{sections/03-data}
+\input{sections/04-methodology}
+\input{sections/05-results}
+%\input{sections/06-conclusion}
+
+\newpage
+\bibliographystyle{agsm} 
+\bibliography{references}
+
+\clearpage
+\appendix
+\input{appendices/appA-proofs}
+\input{appendices/appB-data}
+\input{appendices/appC-protocol}
+\input{appendices/appD-calibration}
+\input{appendices/appE-additional}
+\input{appendices/appF-specifications}
+
+
+
+\end{document}
+
+

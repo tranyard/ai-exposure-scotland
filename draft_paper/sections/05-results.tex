@@ -1,0 +1,325 @@
+\section{Results}\label{sec:results}
+
+I first establish the measure on which the comparison rests, then present and decompose the Scotland--rUK differential. I next examine its sensitivity to the measurement choices that, according to \citet{yin2026}, undermine the interpretation of absolute exposure levels. The differential is then translated into the quantities the SFC forecasts, with the scoring uncertainty propagated through each stage.
+
+\subsection{Occupational exposure and the saturation of the classified measure}\label{sec:saturation}
+ 
+The binary exposed/unexposed measure that dominates the policy literature cannot carry the regional question, because it is saturated. The baseline run scores all 17,945 task--occupation pairs across 894 O*NET occupations. Aggregated to the 104 UK SOC 2020 minor groups on which the regional comparison rests, $E_k$ ranges from 31.7 (building finishing trades) to 84.3 index points (business, research and administrative professionals), with a cross-group standard deviation of 13.6 points, so the continuous measure carries the between-occupation variation a compositional comparison needs. The employment-weighted means, 66.7 points in rUK and 65.8 in Scotland, are high by the standards of the survey-based literature, and since the level is the object \cref{sec:method} argues is fragile to the scoring model, I place no weight on them.
+ 
+The classified measure preserves little of this variation. Under the central thresholds, 84 of the 104 minor groups are Complemented, 9 Substituted, and 11 Unexposed, so that 90.8\% of rUK employment and 90.9\% of Scottish employment sits above the materiality cut. The classifier is, in effect, right-censored: once roughly nine-tenths of employment in both regions is coded as exposed, any regional difference in the intensity of exposure is lost. The classified gap is, then, driven largely by composition within the small unexposed tail. For this reason, I treat the continuous index as the primary measure and use the classified shares mainly as a diagnostic of the classification scheme itself.
+ 
+\subsection{The Scotland--rUK differential}\label{sec:differential}
+ 
+\cref{tab:headline} contains the central result. Scotland's employment-weighted continuous exposure is 0.86 index points below rUK on the 0--100 scale (65.82 against 66.69), a relative shortfall of 1.3\%. The sign is invariant to the exposure operator: the substitution-only index gives $-0.35$ index points, the complementarity index $-0.96$, and the saturating combination $-0.77$. The composed 95\% interval of \cref{sec:interval}, carrying scoring noise and APS sampling error jointly, is $[-1.07, -0.69]$ index points. Scotland is therefore less exposed than the rest of the UK, precisely enough to rule out zero, though by a modest margin.
+ 
+The durable form of that result is scale-free. Scotland sits about two percentile points below rUK in the UK occupational exposure distribution, a magnitude \cref{sec:crossmodel} shows to be stable across scoring models where the $-0.86$ index-point figure is not, and it is the percentile statement a forecasting body should carry forward. The index-point gap is nonetheless reported throughout, since the decomposition, the propagation and the productivity functional are all defined on that scale, and should be read as the baseline model's expression of a finding whose robust content is ordinal.
+ 
+\begin{table}[t]
+\centering
+\caption{Regional exposure indices and the Scotland--rUK differential}
+\label{tab:headline}
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & Scotland & rUK & Gap & Relative gap \\
+\midrule
+\multicolumn{5}{l}{\textit{Panel A: continuous indices (index points, 0--100)}} \\
+Composite (max operator)   & 65.82 & 66.69 & $-0.86$ & $-1.3\%$ \\
+Substitution only          & 38.30 & 38.65 & $-0.35$ & $-0.9\%$ \\
+Complementarity            & 62.70 & 63.66 & $-0.96$ & $-1.5\%$ \\
+Saturating combination     & 74.74 & 75.51 & $-0.77$ & $-1.0\%$ \\
+\addlinespace
+\multicolumn{5}{l}{\textit{Panel B: classified employment shares (\%)}} \\
+Exposed        & 90.91 & 90.78 & $+0.14$ & $+0.1\%$ \\
+Substituted    & 14.90 & 14.21 & $+0.68$ & $+4.8\%$ \\
+Complemented   & 76.02 & 76.56 & $-0.55$ & $-0.7\%$ \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} 
+Panel A is the continuous exposure index on a 0--100 scale and its gaps are in index points; Panel B reports shares of regional employment and its gaps are in percentage points of employment, under the central thresholds (substitution $\ge 70$, complementarity $\ge 40$).
+\end{minipage}
+\end{table}
+ 
+The differential is small because the two regional labour markets are similar, which is a feature of the data and not of the measurement. Their employment-share vectors are close to collinear, with the largest difference across the 104 minor groups amounting to only 1.6 percentage points of employment. Over the observed score range of 32--84 index points, no assignment of exposure can produce a large aggregate gap from compositional differences this small. What the continuous index adds is the ability to recover the sign of that gap and trace it to its underlying components.
+ 
+%The aggregation to minor groups masks any Scotland--rUK employment sorting within occupations, and the APS data, which resolves employment only to the minor group, cannot verify whether such sorting exists. Yet the between-group pattern of \cref{tab:decomposition} suggests it does: Scotland is underweight in the higher-exposure variants of the same broad occupations. If true, the measured differential is conservative. As for the fiscal implications, even a doubled gap translates into a productivity differential of the same order, leaving \cref{sec:productivity} intact.
+ 
+\subsection{Anatomy of the differential}\label{sec:anatomy}
+ 
+The gap decomposes exactly into per-occupation contributions $\Delta\eta_k (E_k - \Ebar_{\rUK})$, and \cref{tab:decomposition} reports the largest on each side. The negative contributions come from two sources. Scotland is underrepresented in highly exposed professional occupations (functional managers and directors alone contribute $-0.17$ points and IT professionals $-0.11$) while being overrepresented in mid-exposure service occupations that a binary classifier would place in the same category as the top of the distribution, notably caring personal services ($-0.17$) and other elementary services ($-0.16$). The offsetting positive contributions arise differently. Scotland is underweight in some low-exposure work, chiefly childcare and related personal services ($+0.09$) and construction and building trades ($+0.06$), and it is overweight in a few high-exposure occupations, among them engineering professionals ($+0.05$), government administration ($+0.05$) and customer service ($+0.04$), the last two being minor groups in which substitution dominates the exposure mix. The differential emerges from many small and economically coherent compositional differences rather than from a few influential occupations.
+ 
+\begin{table}[t]
+\centering
+\caption{Decomposition of the continuous differential: largest contributions}
+\label{tab:decomposition}
+\small
+\begin{tabular}{clccc}
+\toprule
+SOC & Minor group & $E_k$ & $\Delta\eta_k$ (pp) & Contribution (pp) \\
+\midrule
+113 & Functional managers and directors        & 77.5 & $-1.58$ & $-0.171$ \\
+613 & Caring personal services                 & 51.2 & $+1.07$ & $-0.165$ \\
+926 & Other elementary services                & 46.3 & $+0.76$ & $-0.155$ \\
+922 & Elementary cleaning                      & 39.1 & $+0.51$ & $-0.140$ \\
+213 & IT professionals                         & 80.9 & $-0.79$ & $-0.112$ \\
+\\
+611 & Childcare and related personal services  & 47.5 & $-0.49$ & $+0.094$ \\
+531 & Construction and building trades         & 37.4 & $-0.20$ & $+0.059$ \\
+212 & Engineering professionals                & 79.3 & $+0.42$ & $+0.053$ \\
+411 & Administrative: government and related   & 79.4 & $+0.39$ & $+0.050$ \\
+721 & Customer service occupations             & 79.4 & $+0.35$ & $+0.044$ \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Contributions are $\Delta\eta_k (E_k - \Ebar_{\rUK})$, in index points, summing exactly to the composite gap of $-0.86$ index points; the five largest on each side are shown. $E_k$ is on the 0--100 exposure scale and $\Delta\eta_k$ is the Scotland-minus-rUK difference in the within-region employment share, in percentage points of employment.
+\end{minipage}
+\end{table}
+ 
+Nor is the differential simply a London effect. London's index is 69.30, compared with 66.33 for the UK excluding London, while Scotland's 65.82 remains 0.51 index points below the ex-London comparator. Excluding London therefore closes 41\% of the headline gap, but it does not eliminate it. The professional-management underweight persists (functional managers still contribute $-0.14$ points) as does the relative concentration in care-sector employment. Scotland ranks fifth among the twelve UK nations and regions, behind London, the South East, the East of England, and the North West. The appropriate conclusion is not that Scotland is unusually insulated from AI exposure. Rather, London is unusually exposed, while Scotland sits slightly below the middle of a distribution that spans barely 2.5 index points once London is excluded.
+ 
+The employment regression in \Cref{app:specifications} agrees that within broad occupation groups, Scottish employment sits systematically further down the exposure gradient than rUK employment, on the log-employment and employment-share margins alike.
+%The first-difference specification is uninformative, and I read it as such rather than as evidence of no differential response.\footnote{The first-difference interaction is $-0.077$ (SE 0.078). Three annual transitions over 104 cells, with 23 of the pooled Scottish cells containing fewer than 100 respondents across the four waves, cannot identify a dynamic effect of this size; the employment weights contain the damage but cannot repair it.}
+ 
+The industry decomposition points to the same conclusion. The industry-mix component accounts for only $-0.17$ to $-0.21$ of the $-0.87$ index-point gap, while the within-industry component accounts for $-0.66$ to $-0.69$ (\cref{tab:industry}). Roughly three-quarters to four-fifths of the differential therefore arises within industries, and the within-industry term is negative in 17 of the 21 SIC sections (\cref{tab:industrysections}), with education the only material exception. Even holding the industry distribution fixed, Scottish employment within industries sits lower on the exposure gradient.
+ 
+By contrast, the industry-mix component is small because sectoral differences net out. Scotland is underweight in professional, scientific and information services but overweight in public administration, mining and energy, and marginally overweight in finance. The gap is therefore a professional-services phenomenon rather than a financial one.
+%The industry section-by-section breakdown in \cref{tab:industrysections} shows that the within-industry gap is pervasive rather than concentrated. That is, Scottish employment sits lower on the exposure gradient in every large section, with health and social work, wholesale and retail, and professional and technical activities carrying the largest within-industry contributions by virtue of their employment weight. The exception is education, where Scottish employment sits slightly higher on the gradient; the sections with the most extreme within-industry exposure gaps are instead tiny ones, such as extraterritorial bodies and household employers, whose negligible employment share leaves them immaterial to the total.
+ 
+\begin{table}[t]
+\centering
+\caption{Industry-mix and within-industry components of the differential}
+\label{tab:industry}
+\small
+\input{tables/industry_decomposition}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Index points on the 0--100 exposure scale. Employment is split by SIC 2007 section on the pooled APS 2022--2025 sample for which industry is recorded and the occupation matches a scored minor group, so the total differs slightly from the headline gap of \cref{tab:headline}. Per-section contributions are in \cref{tab:industrysections}.
+\end{minipage}
+\end{table}
+ 
+\subsection{Substitution against complementarity}\label{sec:channels}
+ 
+The channel through which Scotland is exposed also differs from rUK, and the distinction matters because substitution and complementarity carry opposite-signed productivity implications in the projection of \cref{sec:productivity}. Panel B of \cref{tab:headline} shows Scotland's classified substituted employment share 0.68 percentage points above rUK (14.90\% against 14.21\%), even though its continuous substitution intensity is 0.35 points lower. Scotland is overweight in occupations where the substitution score exceeds the complementarity score, such as sales assistants and customer-service occupations, whilst underweight in the administrative minor groups with the highest substitution intensities. The precise magnitude depends on how exposure is classified, but the qualitative pattern is stable across specifications. That is, Scottish exposure is relatively more concentrated in substitution-dominated occupations, even though both continuous channel indices are lower than in rUK. The continuous indices make the same point without the classifier: Scotland's substitution deficit is proportionally smaller than its complementarity deficit ($-0.9\%$ against $-1.5\%$), so its exposure leans towards substitution in relative terms even while sitting below rUK on both channels. For that reason, the productivity projection in \cref{sec:productivity} treats the two channels separately throughout.
+ 
+\subsection{Fragility of the classified gap, robustness of the continuous gap}\label{sec:fragility}
+ 
+The classified gap changes sign under reasonable variations in its own construction whereas the continuous gap does not. At the central thresholds Scotland's exposed share exceeds rUK's by 0.14 percentage points, at the low thresholds by 0.19 points, and at the high thresholds the sign reverses to $-1.36$ points. A measure whose sign depends on the threshold pair is a diagnostic of its own construction, and the mechanism is the censoring of \cref{sec:saturation}: with 91\% of employment above the cut, the classified gap is generated by a handful of share differences in the unexposed tail, and moving the cut relocates the tail. The continuous gap, by contrast, is negative under all four operators, under both classification schemes' underlying scores, and at every point of the uncertainty analysis below.
+ 
+Classification stability behaves consistently with this reading. Across the meaning-preserving variants, 55.0\% of the near-boundary calibration occupations flip class against 6.0\% of the randomly drawn ones, so instability concentrates where it should. It does not propagate: no occupation and no minor group falls below the stability landmark of \cref{app:calibration}, so the flag never binds, and excluding minor groups by average stability leaves the classified gap unchanged to the fourth decimal place at every cutoff up to 0.85. The flipping occupations carry small and regionally similar employment shares.
+ 
+\subsection{Scoring noise, estimand sensitivity, and the composed interval}\label{sec:interval}
+ 
+The calibration experiment delivers the within-model noise parameters. Across the meaning-preserving variants (V1--V3 of \cref{tab:calibration}), the standard deviation of an occupation composite ranges from 1.3 to 2.4 index points across the five occupational families, with task-level standard deviations of 3.4--5.1 index points for substitution and 3.6--6.0 for complementarity. The estimand variants shift levels by much more. Shortening the horizon to five years (V4) moves composites by $-1.5$ index points on average, and collapsing the two-dimensional rubric to a single score (V5) moves them by $-11.6$. Yet the cross-occupation correlations with the V0 baseline remain 0.998 and 0.956, so changing the question moves every level and barely moves the ordering. That is the same common-mode structure \cref{prop:cancellation} formalises, with levels highly specification-dependent and relative positions not. 
+%That is why I place little weight on the levels of \cref{sec:saturation} and focus instead on the differential.\footnote{The near-invariance to the horizon is a construct caveat rather than a reassurance: the model appears to rate what a task is amenable to more than what is achievable within the stated window. Any component of that insensitivity common across occupations is innocuous for the differential by \cref{prop:cancellation}, but it bears on the projection of \cref{sec:productivity}, where the ten-year horizon does economic work, and I return to it there.}
+ 
+\begin{table}[t]
+\centering
+\caption{Propagated uncertainty in the differential $\dEbar$}
+\label{tab:propagation}
+\small
+\begin{tabular}{lccccc}
+\toprule
+Component & $\rho$ & Mean & SD & 2.5\% & 97.5\% \\
+\midrule
+Scoring only  & 0   & $-0.863$ & 0.017 & $-0.897$ & $-0.830$ \\
+Scoring only  & 0.2 & $-0.864$ & 0.031 & $-0.922$ & $-0.801$ \\
+Scoring only  & 0.4 & $-0.864$ & 0.039 & $-0.938$ & $-0.788$ \\
+Sampling only & --  & $-0.864$ & 0.099 & $-1.070$ & $-0.690$ \\
+Composed      & 0   & $-0.863$ & 0.101 & $-1.069$ & $-0.688$ \\
+Composed      & 0.2 & $-0.862$ & 0.103 & $-1.086$ & $-0.677$ \\
+Composed      & 0.4 & $-0.865$ & 0.108 & $-1.091$ & $-0.675$ \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Index points on the 0--100 exposure scale; 1,000 draws per row. Scoring draws perturb occupation composites with the calibrated $\sigma_g$, correlated within occupational family at $\rho$; sampling draws bootstrap the employment shares over persons within region and year. The scoring perturbation is common to both regions by construction, so its rows illustrate \cref{prop:cancellation} rather than quantify uncertainty in the gap. 
+\end{minipage}
+\end{table}
+ 
+\cref{tab:propagation} propagates the noise, though the scoring-only rows are best viewed as a diagnostic. Each draw perturbs the occupation scores once and feeds both regions the same perturbed vector, so scoring noise is common-mode across regions by construction, and its near-total cancellation in the differential (an SD of 0.017 index points against level SDs fifty times larger) is a numerical illustration of \cref{prop:cancellation}, not a credible interval for the gap. The relevant uncertainty comes from sampling. Bootstrapping the employment shares widens the SD to 0.099 index points, and the composed interval at the most conservative within-family correlation is $[-1.09, -0.68]$ index points, with all 1,000 composed draws negative. Together this frames the headline exposure result as $\dEbar = -0.86$ index points, with 95\% interval $[-1.07, -0.69]$, most of whose width comes from survey sampling.
+ 
+\subsection{Cross-model stability of the differential}\label{sec:crossmodel}
+ 
+The remaining concern is model choice. As \citet{yin2026} show, it introduces a source of error that averaging cannot remove and therefore provides a direct test of \cref{prop:cancellation}. I re-scored all task--occupation pairs on two additional models, GPT-4o (a different provider) and Claude Haiku 4.5 (a lower tier of the same provider), and recomputed the differential from each.
+ 
+\begin{table}[t]
+\centering
+\caption{Cross-model stability of the differential}
+\label{tab:crossmodel}
+\small
+\begin{tabular}{llccc}
+\toprule
+Scoring model & Contrast & Mean bias & $\dEbar$ &
+$\operatorname{corr}(b^{M}_k, \Delta\eta_k)$ \\
+\midrule
+Claude Sonnet 4.6 & baseline                   & --- & $-0.86$ & --- \\
+Claude Haiku 4.5  & same provider, lower tier  & 3.5 & $-0.53$ & $-0.24$ \\
+GPT-4o            & different provider         & 9.1 & $-0.43$ & $-0.23$ \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Index points of the 0--100 scale. ``Mean bias'' is the mean absolute occupation-level score difference from the Sonnet baseline, $|b^{M}_k|$; $\dEbar$ is the employment-weighted Scotland--rUK differential recomputed from each model's scores; $b^{M}_k$ is the minor-group score difference from baseline, in index points, and $\Delta\eta_k$ the Scotland--rUK employment-share gap, so the final column is the empirical analogue of the surviving term in \cref{eq:prop1}.
+\end{minipage}
+\end{table}
+ 
+The levels behave as \citet{yin2026} would predict. The alternative models disagree with the Sonnet baseline about absolute exposure by a mean occupation-level bias of 3.5 index points for Haiku and 9.1 for GPT-4o, the latter a divergence of the order Yin documents across frontier models. The differential moves far less. Against a baseline gap of $-0.86$ index points, Haiku returns $-0.53$ and GPT-4o $-0.43$, so the differencing removes on the order of nine-tenths of the model disagreement. That much is \cref{prop:cancellation} doing its work on the additive component of the bias.
+ 
+\Cref{cor:affine} shows that the cross-model differences are systematic rather than idiosyncratic. In both alternative models the bias is strongly correlated with the exposure level itself (0.88 for Haiku, 0.95 for GPT-4o), implying a compression of the scale rather than a simple shift. \footnote{This is a non-classical, mean-reverting error of the kind validation studies of survey data routinely find \citep{bound1991}, with the difference that here there is no validated truth to revert towards, only a baseline that is itself a model.} The employment-weighted standard deviation of the minor-group scores falls from 13.58 index points under Sonnet to 9.59 under Haiku and 7.55 under GPT-4o, implying affine slopes of $c^{M} = 0.71$ and $0.56$. \Cref{eq:cor2} then predicts differentials of $-0.61$ and $-0.48$ from compression alone, against realised values of $-0.53$ and $-0.43$, so the affine term accounts for roughly three-quarters of the movement in the Haiku gap and nine-tenths in the GPT-4o gap. Because compression pulls the highest-exposure occupations down and Scotland is underweight in exactly those, it correlates mildly with the share gap ($-0.24$ and $-0.23$), which is how a multiplicative disagreement that \cref{eq:decomposition} cannot represent presents itself in \cref{eq:prop1}.
+ 
+Parts (ii) and (iii) of \cref{cor:affine} say what to do about it. Dividing by each model's score dispersion removes any affine rescaling and percentile ranks remove any monotone one, and under these transformations the raw gaps of $-0.86$, $-0.53$ and $-0.43$ index points become $-0.064$, $-0.055$ and $-0.057$ standard-deviation units and $-1.97$, $-1.76$ and $-2.01$ percentile points (\cref{tab:crossmodelstd}). The two-fold disagreement in index points collapses to about 13\%, and GPT-4o, whose raw gap lies outside the within-model interval of \cref{tab:propagation}, lands within 2\% of the baseline in percentile terms. Those standardised gaps are the non-affine residual of \cref{eq:A6c}, so their spread measures how much of the disagreement concerns Scotland's position within the distribution, and on that the three models are close.
+%\footnote{\Cref{cor:crossmodel} bounds that residual: the cross-model movement cannot exceed $\tfrac{1}{100}\lVert\Delta\eta\rVert\,\lVert b^{M} - \bar{b}^{M}\rVert$, which is 1.36 index points for Haiku and 1.88 for GPT-4o, so the realised displacements of $-0.33$ and $-0.43$ sit at under a quarter of the worst case.}
+ 
+\begin{table}[t]
+\centering
+\caption{Scale-free cross-model differentials}
+\label{tab:crossmodelstd}
+\small
+\input{tables/cross_model_standardised}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} The score SD is the UK-employment-weighted standard deviation of the 104 minor-group scores under each model. The SD-unit gap divides the index-point gap by that dispersion, removing any affine rescaling; the percentile gap replaces each score with its UK-employment-weighted percentile rank, removing any monotone rescaling. Both transformations are applied to the score distribution, which is common to the two regions, so neither introduces regional variation. Model biases and the raw differentials are in \cref{tab:crossmodel}.
+\end{minipage}
+\end{table}
+ 
+This narrows the claim and improves its foundation. The sign of the differential, its compositional structure, and its scale-free magnitude of about two percentile points all survive a change of scoring model, and \cref{cor:affine} guarantees the last of these against any monotone rescaling instead of leaving it as an observed regularity. The index-point figure does not survive. It ranges from $-0.43$ to $-0.86$ because the models disagree about the dispersion of the index far more than about Scotland's position within it. I therefore report the scale-free magnitude as the headline, with $-0.86$ index points as the baseline model's expression of it.
+ 
+\subsection{Implications for projected productivity}\label{sec:productivity}
+
+The projection converts the exposure gap into the units a fiscal claim has to be made in. Since the baseline projection is a linear functional of the scores with region-common coefficients, \cref{cor:functionals} makes its regional differential inherit the cancellation of \cref{prop:cancellation} exactly, so the differential is proportional to $\dEbar$ by construction. 
+%What the projection adds is not information but a second decision, absent from the exposure measurement itself, about which functional of the scores stands in for Acemoglu's share of exposed tasks (\cref{sec:calibration}).
+
+Under the central adoption scenario the composite index implies a cumulative ten-year TFP contribution of 2.209\% for rUK against 2.180\% for Scotland, a differential of $-0.029$ percentage points (\cref{tab:projection}). Moving the average cost saving on an exposed task, $\kappa$, across its low and high settings scales the rUK level from 1.69\% to 2.79\% and the differential with it, from $-0.022$ to $-0.036$ points. Run on the two channel indices separately rather than on their composite, the complementarity projection gives $-0.032$ percentage points and the substitution projection $-0.012$. These are alternative projections of the same gap rather than additive components of the composite figure, and in this case, fall either side of it.
+
+Now, equation \eqref{eq:tfp} asks for the share of an occupation's task content that is exposed, and I use the continuous index $\Ebar_k$ in its place. The two are not the same object: $\Ebar_k$ is an importance-weighted mean amenability rating, whereas the framework wants an importance-weighted \emph{share} of task content above a cut. Panel~C therefore repeats the central projection on the latter, $\mathrm{Sub}_k + \mathrm{Comp}_k$, at each of the three threshold pairs. 
+%This is not the censored measure of \cref{sec:saturation}: the material-exposure cut and the majority rule that generate the sign instability of \cref{sec:fragility} are applied to the \emph{occupation}, and the task-content share sits below both of them, so it remains continuous and employment-weightable. It is nonetheless threshold-dependent where $\Ebar_k$ is not, which is why it enters as a robustness row and not as the baseline. Panel C reports the same central-scenario projection using the task-content share in place of $\Ebar_k$, at each of the three threshold pairs of \cref{tab:thresholds}. 
+Now, equation \eqref{eq:tfp} asks for the share of an occupation's task content that is exposed, and I use the continuous index $\Ebar_k$ in its place. $\Ebar_k$ is an importance-weighted mean amenability rating, whereas the framework wants an importance-weighted \emph{share} of task content above a cut. Panel~C therefore repeats the central projection on the latter, $\mathrm{Sub}_k + \mathrm{Comp}_k$, at each of the three threshold pairs. The differential holds its sign throughout, ranging from $-0.021$ to $-0.050$ points meaning whichever functional stands in for Acemoglu's exposed task share, Scotland's projected productivity gain from AI adoption falls short of rUK's.
+
+Neither functional licenses a reading of the levels. Both put a far larger fraction of task content in the exposed category than the roughly 20\% Acemoglu takes from \citet{eloundou2024}, so both inflate the projected path relative to his 0.66\% national figure by roughly the ratio of the two exposure measures. That inflation is common to the two regions and cancels from the differential by \cref{cor:functionals}.
+
+\begin{table}[t]
+\centering
+\caption{Projected ten-year TFP contribution and the Scotland--rUK differential}
+\label{tab:projection}
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & $\kappa$ & rUK & Scotland & Differential \\
+\midrule
+\multicolumn{5}{l}{\textit{Panel A. Composite exposure index, by cost-saving scenario}} \\
+Low     & 0.110 & 1.687 & 1.665 & $-0.022$ \\
+Central & 0.144 & 2.209 & 2.180 & $-0.029$ \\
+High    & 0.182 & 2.792 & 2.756 & $-0.036$ \\
+\addlinespace
+\multicolumn{5}{l}{\textit{Panel B. Single-channel projections, central scenario}} \\
+Complementarity only & 0.144 & 2.108 & 2.077 & $-0.032$ \\
+Substitution only    & 0.144 & 1.280 & 1.268 & $-0.012$ \\
+\addlinespace
+\multicolumn{5}{l}{\textit{Panel C. Exposed task-content share $\mathrm{Sub}_k + \mathrm{Comp}_k$, central scenario}} \\
+Thresholds $(60,30)$ & 0.144 & 3.030 & 3.009 & $-0.021$ \\
+Thresholds $(70,40)$ & 0.144 & 2.761 & 2.722 & $-0.040$ \\
+Thresholds $(80,50)$ & 0.144 & 2.548 & 2.498 & $-0.050$ \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.86\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Cumulative contribution to total factor productivity over the ten-year horizon, in per cent; the differential is Scotland minus rUK in percentage points. $\kappa$ is the average cost saving on an exposed task. Panel B rows are alternative projections run on the two channel indices. Panel C replaces $\Ebar_k$ with the importance-weighted share of task content classified as exposed, at each threshold pair. The band carried into \cref{tab:fiscal} is the Panel~A range.
+\end{minipage}
+\end{table}
+
+\subsection{Wage gradients: propagation at the worker level}\label{sec:wages}
+
+The wage regression is the third propagation demonstration where exposure enters \cref{eq:wage} as a regressor measured with error whose variance the calibration of \cref{sec:noise} supplies. The question here is not whether the gradient is attenuated but whether the attenuation can be bounded at the worker level, and what remains of the Scotland interaction once it is.
+
+Higher-exposure occupations pay markedly more, reflecting how exposure aligns with professional and cognitive task content. The gradient is 1.276 (SE 0.170), so each ten index points of exposure carries about 13.6\% higher pay, and pay differs by 95.6\% across the observed range of 31.7 to 84.3 index points. The Scotland interaction is $-0.300$ with a standard error of 0.065 when errors are clustered by occupation, the level at which the exposure regressor varies.
+%\footnote{Clustering by occupation $\times$ region gives a standard error of 0.226 on the same point estimate. That choice treats the identical score on the two sides of the border as two independent regressors and assumes away the cross-region error covariance within an occupation, which the interaction contrast nets out; occupation clusters nest occupation $\times$ region clusters and are the appropriate level.} Within-occupation wages therefore rise less steeply with exposure in Scotland than in the rUK.
+
+A level control cannot purge either of two confounds sitting behind the interaction. The first is composition. Exposure aligns with graduate, professional and public-sector work, so if Scotland's within-occupation qualification or sector profile moves with exposure, the interaction absorbs that drift too. Adding highest qualification and a public-sector indicator (\cref{tab:wagespecs}, column 2) cuts the exposure gradient from 1.276 to 0.941 but barely touches the Scotland interaction. Importantly this stability implies Scotland's flatter gradient is not a proxy for its qualification mix or its larger public sector, since both work through the level of the wage schedule rather than its slope. The gradient's fall is a different story, though. Qualification is partly a channel through which exposure raises pay, not simply a confound, so column 2 reports a within-qualification return to exposure.
+
+The second confound is London, because $\beta_3$ is otherwise identified against an rUK in which the most exposed professional occupations also carry the capital's pay premium. Absorbing all regional wage levels in fixed effects (Column 3) leaves the slopes and gives $-0.216$ (SE 0.056), removing about a fifth of the controlled interaction. Giving London its own level and its own exposure slope instead (Column 4), gives $-0.187$ (SE 0.058), removing about three-tenths. So roughly a third of the controlled interaction is the capital, split between its wage level and its steeper gradient, and the remainder belongs to Scotland.
+
+Against the ex-London comparator, then, the Scottish return to exposure is roughly a fifth lower than in the rest of the UK (0.697 against 0.884). Set against the Scotland level effect of 0.138, the two schedules rotate rather than shift. Scottish pay carries a premium of about 8\% at the least-exposed end of the distribution, closes at 73.8 index points, and is about 2\% below the ex-London comparator at the most exposed end. The crossing point sits inside the observed range, so the flattening is not a statement about the tail alone. The regional tilt is therefore not confined to employment quantities. The price of exposed work is also modestly lower in Scotland, and the two margins point the same way for the fiscal translation of \cref{sec:fiscal}.
+
+The gradient sits where the literature would put it: pay rises with measured exposure across every measurement generation, whether the index is ability-based or LLM-rated \citep{felten2021, eloundou2024, henseke2025, pizzinelli2023}, though because each index carries its own scale, that agreement establishes sign and composition, not magnitude. No such literature exists for the regional margin. I am aware of no comparable within-country estimate of a regional rotation of the exposure--wage schedule, so the Scotland interaction is anchored against internal benchmarks instead, namely the London slope and the public-sector premium of \citet{cribb2025}.
+
+\begin{table}[t]
+\centering
+\caption{Exposure--wage gradient: sample, controls, and the London confound}
+\label{tab:wagespecs}
+\input{tables/wage_specs_key}
+\end{table}
+
+Two limits on the exercise bear stating. Gross hourly pay is recorded on the APS for employees only, so the estimates describe the employee earnings distribution and exclude the self-employed, who are disproportionately concentrated in exactly the professional occupations that sit at the top of the exposure range. RETURN TO AND CHECK FOR OTHER PROPAGATION PROCEDURES.And the measurement-error correction turns out not to bind. The reliability complement is small ($\lambda = 0.016$), indicating that between-occupation variation in exposure is much larger than the scoring noise, so the classical errors-in-variables correction changes the exposure coefficient by 1.6\%, from 1.276 to 1.297, and the Scotland interaction from $-0.300$ to $-0.305$ (\cref{app:additional}). Scoring noise is therefore quantitatively unimportant at the worker level, as \cref{tab:propagation} shows it to be in the aggregate differential; where it does bite is the absolute exposure levels, which is precisely where \cref{prop:cancellation} offers no protection.
+
+\subsection{A stylised fiscal translation}\label{sec:fiscal}
+
+This subsection concludes the chain that \cref{sec:background} opened, carrying the projection into the income tax net position. What follows is an accounting translation under stated assumptions, and not a forecast.
+
+Mapping the differential of \cref{tab:projection} to the budget takes four steps. The first converts total factor productivity into labour productivity. Equation \eqref{eq:tfp} delivers a TFP path, whereas earnings track output per hour, and under constant returns with a capital share of one third a permanent one per cent rise in TFP raises output per hour by $1/(1-\alpha) = 1.5$ per cent once the capital stock has adjusted \citep{obr2025}. The second applies unit long-run pass-through of labour productivity into real earnings, which spread evenly across the horizon is worth about $-0.0043$ percentage points of earnings growth a year at the centre. The third converts earnings into revenue. Here the elasticity of non-savings, non-dividend (NSND) revenue to earnings is not unity, because the schedule is progressive: a marginal, permanent shift in the level of earnings changes revenue in the ratio of the income-weighted average marginal rate to the average rate on total income, and frozen higher, advanced and top rate thresholds hold that ratio above one \citep{sgreadyreckoner2026}. I estimate it at $\varepsilonNSND$ on the APS earnings distribution under the prevailing Scottish schedule, which sits at the upper end of the 1.7--2.0 range international microsimulation evidence finds for progressive income tax systems generally (\cref{app:elasticity}). Allowing the earnings differential to fall in proportion to occupational exposure, rather than evenly, raises it only to 1.974. The final step is per-capita indexation of the block grant adjustment \citep{gov2023}. This make the exercise a differential one since it is Scotland--rUK per-capita revenue growth, not the level of Scottish revenue, that moves the net position. Because the adjustment is indexed to rUK growth and a Scotland-specific shock leaves rUK untouched, only the Scottish elasticity enters, applied to Scottish NSND revenue of \pounds18.6 billion in 2024--25 \citep{hmrcoutturn2025}.
+
+Composing the four gives a net-position sensitivity of about $-\pounds\fiscCen$ million a year at the centre, and $-\pounds\fiscLo$ to $-\pounds\fiscHi$ million across the cost-saving band (\cref{tab:fiscal}). Against the SFC's forecast net position of \pounds969 million for 2026--27 \citep{sfc2026}, a central sensitivity of this size is around \fiscPctAnn\ of one per cent, well inside the SFC's income tax forecast-error ranges, which run to the hundreds of millions. The terminal annual effect, in the tenth year, is of order \pounds\termCen\ million, or about \fiscPctTerm\ per cent of next year's forecast position.
+
+The translation abstracts from one channel I do not quantify. Per-capita indexation turns on relative population growth, and in the year to mid-2024 Scotland's population grew by 0.7 per cent against 1.2 per cent in England and 1.1 per cent across the UK as a whole \citep{park2023}. A demographic differential of that order is two orders of magnitude larger than the earnings differential traced here, and moves the net position through the same arithmetic.
+
+The budgetary significance of the compositional differential comes less from its annual size than from its persistence. Scottish income tax outturn is reconciled against forecast three years after the event, and the reconciliation is applied to the budget in the year it lands \citep{gov2023}. A differential driven by occupational structure is persistent rather than transitory, so unlike a sampling error it does not wash out across successive cycles: it enters each year's forecast, is carried into that year's reconciliation, and is applied \textit{ex post} against a budget already set three years earlier. The level effect therefore accumulates even though the annual increment does not grow, which is why the ten-year cumulative cost in \cref{tab:fiscal} is an order of magnitude larger than any single year's, and why it arrives with a three-year lag. Accordingly, a forecasting body has to get the direction and the persistence right since the index-point magnitude that \cref{sec:crossmodel} shows to be the least robust part of the measurement matters far less. Getting the sign wrong, and only correcting it three years on, costs more than the annual figure in \cref{tab:fiscal} suggests, even though that figure alone would not justify an adjustment today.
+
+\begin{table}[t]
+\centering
+\caption{Stylised translation of the exposure differential into the
+income tax net position}
+\label{tab:fiscal}
+\small
+\begin{tabular}{lccc}
+\toprule
+ & Low & Central & High \\
+\midrule
+TFP differential (pp, 10-year cumulative) &
+  $-0.022$ & $-0.029$ & $-0.036$ \\
+Labour productivity differential (pp, 10-year cumulative) &
+  $-0.033$ & $-0.043$ & $-0.054$ \\
+Implied earnings growth differential (pp p.a.) &
+  $-0.0033$ & $-0.0043$ & $-0.0054$ \\
+Implied NSND revenue growth differential (pp p.a.) &
+  $-\revLo$ & $-\revCen$ & $-\revHi$ \\
+Net position sensitivity (\pounds m p.a.) &
+  $-\fiscLo$ & $-\fiscCen$ & $-\fiscHi$ \\
+Memo: terminal annual effect, year ten (\pounds m) &
+  $-\termLo$ & $-\termCen$ & $-\termHi$ \\
+Memo: cumulative effect over the ten years (\pounds m) &
+  $-\cumLo$ & $-\cumCen$ & $-\cumHi$ \\
+Memo: forecast net position 2026--27 (\pounds m) &
+  \multicolumn{3}{c}{969} \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} The TFP differential is the ten-year cumulative
+Scotland--rUK differential from the composite projection of
+\cref{sec:productivity}. The low and high columns are the cost-saving
+scenarios of that projection, obtained by moving the average cost saving
+on an exposed task, $\kappa$, across its low, central and high settings.
+The labour productivity row applies $1/(1-\alpha)$ with a capital share
+of $\alpha = 1/3$, the conversion from TFP to output per hour under
+constant returns once the capital stock has adjusted \citep{obr2025}.
+The earnings row applies unit long-run pass-through of labour
+productivity into real earnings, annualised over the horizon. The
+revenue row applies an elasticity of NSND revenue to earnings of
+$\varepsilonNSND$, computed as the ratio of the income-weighted average
+marginal rate to the average rate on total income across the pooled
+APS earnings distribution under the prevailing Scottish schedule
+(\cref{app:elasticity}); frozen higher, advanced and top rate
+thresholds are what hold it above one \citep{sgreadyreckoner2026}.
+The net position sensitivity is the revenue growth differential times
+Scottish NSND revenue of approximately \pounds18.6 billion in 2024--25
+\citep{hmrcoutturn2025}, under the per-capita indexation of the block
+grant adjustment \citep{gov2023}. The terminal memo is the annual flow
+in the tenth year, being ten years of accumulated differential growth
+applied once; the cumulative memo sums the annual flows over the
+horizon. Neither is an accumulation of the other. The translation
+abstracts from the population growth differential. The memo net
+position is the SFC January 2026 forecast \citep{sfc2026}.
+\end{minipage}
+\end{table}
