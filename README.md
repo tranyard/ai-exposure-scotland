@@ -43,12 +43,12 @@ ai-exposure-scotland/
 │   ├── 18_industry_decomposition.R     industry mix vs within-industry split
 │   ├── 19_industry_invariance.R        total-variation diagnostic on Assumption 1
 │   ├── 20_elasticity.R           NSND revenue elasticity + fiscal translation
-│   ├── _run_all.R                orchestrator (runs everything in order)
+│   ├── _run_all.R                runs everything in order
 │   └── install_packages.R        one-off dependency install
 │
 ├── tests/                        ← smoke test (no API, no real data)
 │   ├── 00_make_synthetic_data.R  generates fake inputs
-│   └── run_smoke_test.R          runs full pipeline offline with assertions
+│   └── run_smoke_test.R          runs full pipeline w/out cost or scores 
 │
 ├── paper/                        ← LaTeX source - download this and compile 
 │   ├── main.tex                  dissertation root
