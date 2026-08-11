@@ -146,9 +146,12 @@ std_tbl <- bind_rows(
          gap_sd  = cmc$gap_sd_alt,     gap_pct = cmc$gap_pct_alt))
 # Paper-ready column names: this table is \input{} directly and is not
 # read back by any other script.
+# gap_raw is carried in [0,1] index units throughout this script; the SD
+# and percentile columns are already on the 0-100 / percentile scales, so
+# only the raw gap needs rescaling to index points for the paper table.
 std_paper <- std_tbl |>
   transmute(`Scoring model`            = model,
-            `Gap (index points)`       = gap_raw,
+            `Gap (index points)`       = 100 * gap_raw,
             `Score SD (index points)`  = sd,
             `Gap (SD units)`           = gap_sd,
             `Gap (percentile points)`  = gap_pct)

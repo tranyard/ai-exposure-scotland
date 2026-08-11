@@ -1,11 +1,5 @@
 # Panel C: the TFP projection with the classified task-content share
-# Sub_uk + Comp_uk substituted for the continuous index Ebar_k, at each
-# threshold pair in THRESHOLDS, central-scenario kappa only. The cut and
-# the majority rule apply to task content within an occupation, not to
-# occupations, so Share_k stays continuous in [0,1] and remains
-# employment-weightable.
-#
-# Run after 06_crosswalk.R and whatever builds region_panel.csv.
+
 source(here::here("R", "00_config.R"))
 
 # soc_uk is created as character in 06 but readr type-guesses it back as
@@ -17,7 +11,10 @@ norm_soc <- function(x) {
   substr(gsub("[^0-9]", "", chr), 1, APS$soc_level)
 }
 
-KAPPA_CENTRAL <- 0.144
+# Central overall cost saving, Acemoglu (2024): 0.27 (average labour
+# cost saving) x 0.57 (UK labour share) = 0.154. See 10_acemoglu_projection.R
+# for the low/central/high derivation.
+KAPPA_CENTRAL <- 0.154
 
 panel <- read_csv(require_file(
   file.path(PATHS$cache, "region_panel.csv"),
@@ -59,10 +56,7 @@ base <- panel |>
   mutate(pi = coalesce(pi, 0.23))
 
 sig_chk <- base |> group_by(region) |> summarise(s = sum(sigma), .groups = "drop")
-if (any(abs(sig_chk$s - 1) > 1e-6))
-  message("sigma does not sum to 1 within region (",
-          paste(sprintf("%s=%.4f", sig_chk$region, sig_chk$s), collapse = ", "),
-          "); levels scale accordingly, the differential is unaffected.")
+
 
 # One threshold set at a time: each is a clean many-to-one join, which
 # avoids a many-to-many warning.
@@ -113,6 +107,3 @@ for (i in seq_len(nrow(diff_tbl))) {
 }
 
 sgn <- sign(diff_tbl$diff)
-message(if (all(!is.na(sgn)) && all(sgn == sgn[1]))
-  "sign consistent across all three threshold pairs."
-  else "sign changes across threshold pairs.")

@@ -122,10 +122,15 @@ if (!is.null(uk)) {
 implied_m <- sum(scot$piwt * scot$T_i) / 1e6
 coverage  <- implied_m / ANCHOR$sit_outturn_m
 
+
+N_WAVES        <- if ("year" %in% names(scot)) dplyr::n_distinct(scot$year) else 4L
+implied_m_wave <- implied_m / N_WAVES
+coverage_wave  <- implied_m_wave / ANCHOR$sit_outturn_m
+
 message(sprintf(
-  "NSND elasticity (%s schedule, hours: %s): eps = %.3f | eps_E = %s | coverage %.2f",
+  "NSND elasticity (%s schedule, hours: %s): eps = %.3f | eps_E = %s | coverage %.2f pooled, %.2f per wave",
   TAX_YEAR, hours_source, eps,
-  if (is.na(eps_E)) "n/a" else sprintf("%.3f", eps_E), coverage))
+  if (is.na(eps_E)) "n/a" else sprintf("%.3f", eps_E), coverage, coverage_wave))
 
 els_tbl <- tibble::tibble(
   Quantity = c(
@@ -133,9 +138,11 @@ els_tbl <- tibble::tibble(
     "Average rate on total income",
     "Elasticity of NSND revenue to earnings, eps",
     "Incidence-weighted elasticity, eps_E",
-    "Implied aggregate liability (GBP m)",
+    "Implied aggregate liability, pooled 4 waves (GBP m)",
+    "Implied aggregate liability, per wave (GBP m)",
     "HMRC outturn, 2024-25 (GBP m)",
-    "Coverage ratio (implied / outturn)",
+    "Coverage ratio, pooled (implied / outturn)",
+    "Coverage ratio, per wave (implied / outturn)",
     "Scottish observations",
     "Tax year of schedule"),
   Value = c(
@@ -144,8 +151,10 @@ els_tbl <- tibble::tibble(
     sprintf("%.3f", eps),
     if (is.na(eps_E)) "n/a" else sprintf("%.3f", eps_E),
     sprintf("%.0f", implied_m),
+    sprintf("%.0f", implied_m_wave),
     sprintf("%.0f", ANCHOR$sit_outturn_m),
     sprintf("%.2f", coverage),
+    sprintf("%.2f", coverage_wave),
     format(nrow(scot), big.mark = ","),
     TAX_YEAR))
 save_csv(els_tbl, file.path(PATHS$tables, "nsnd_elasticity.csv"))
@@ -192,3 +201,121 @@ cat(sprintf(paste0(
   r0(g("lo","terminal_m")), r0(g("central","terminal_m")), r0(g("hi","terminal_m")),
   r0(g("lo","cumul_m")),    r0(g("central","cumul_m")),    r0(g("hi","cumul_m")),
   abs(g("central","pct_netpos_terminal"))))
+
+# =====================================================================
+# Error budget for the fiscal magnitude.
+
+
+pts <- function(x) 100 * x        # index units [0,1] -> index points
+
+gap_base <- tryCatch(
+  pts(readr::read_csv(table_csv("region_indices_continuous"),
+                      show_col_types = FALSE) |>
+        dplyr::filter(operator == "max") |> dplyr::pull(gap)),
+  error = function(e) -0.8632)
+
+# Index points of gap -> GBP m per annum, through the chain above.
+tfp_per_pt <- dtfp$dTFP / gap_base
+names(tfp_per_pt) <- dtfp$scenario
+
+annual_from_gap <- function(gap_pts, scenario = "central") {
+  unname(tfp_per_pt[scenario]) * gap_pts * amp / 10 * eps / 100 *
+    ANCHOR$base_for_fiscal
+}
+
+# The rescaling must reproduce the pipeline exactly at the baseline gap.
+# If this fails the chain is not linear in the differential and the error
+# budget below is invalid.
+stopifnot(all(abs(vapply(fiscal$scenario,
+                         \(s) annual_from_gap(gap_base, s), 0) -
+                  fiscal$annual_m) < 1e-8))
+
+per_pt   <- abs(annual_from_gap(-1))
+central  <- abs(annual_from_gap(gap_base))
+
+# --- source 1-3: propagated interval on the differential --------------
+mc_f <- table_csv("montecarlo_intervals")
+mc_rows <- if (file.exists(mc_f)) {
+  readr::read_csv(mc_f, show_col_types = FALSE) |>
+    dplyr::filter(quantity == "Delta_Ebar") |>
+    dplyr::mutate(
+      keep = (component == "scoring"  & rho == max(MONTECARLO$rho_grid)) |
+             (component == "sampling") |
+             (component == "composed" & rho == max(MONTECARLO$rho_grid))) |>
+    dplyr::filter(keep) |>
+    dplyr::transmute(
+      source = dplyr::recode(component,
+        scoring  = sprintf("Framing noise, rho = %.1f", max(MONTECARLO$rho_grid)),
+        sampling = "APS employment-share sampling",
+        composed = sprintf("Composed measurement interval, rho = %.1f",
+                           max(MONTECARLO$rho_grid))),
+      gap_lo = pts(p2.5), gap_hi = pts(p97.5))
+} else {
+  warning("montecarlo_intervals.csv not found - measurement rows omitted.",
+          call. = FALSE)
+  tibble::tibble(source = character(), gap_lo = numeric(), gap_hi = numeric())
+}
+
+# --- source 4: adoption scenario, at the baseline gap -----------------
+kappa_row <- tibble::tibble(
+  source = "Adoption scenario (kappa band)",
+  gap_lo = gap_base, gap_hi = gap_base,
+  m_lo = min(abs(fiscal$annual_m)), m_hi = max(abs(fiscal$annual_m)))
+
+# --- source 5: choice of scoring model, at central kappa --------------
+cm_f <- table_csv("common_mode_test")
+model_row <- if (file.exists(cm_f)) {
+  cm <- readr::read_csv(cm_f, show_col_types = FALSE)
+  g_alt <- pts(c(cm$gap_M[1], cm$gap_alt))
+  tibble::tibble(source = "Choice of scoring model",
+                 gap_lo = min(g_alt), gap_hi = max(g_alt))
+} else {
+  warning("common_mode_test.csv not found - cross-model row omitted.",
+          call. = FALSE)
+  tibble::tibble(source = character(), gap_lo = numeric(), gap_hi = numeric())
+}
+
+budget <- dplyr::bind_rows(mc_rows, model_row) |>
+  dplyr::mutate(m_lo = abs(annual_from_gap(gap_hi)),
+                m_hi = abs(annual_from_gap(gap_lo))) |>
+  dplyr::bind_rows(kappa_row) |>
+  dplyr::mutate(
+    span_pct = 100 * (m_hi - m_lo) / central,
+    dev_pct  = 100 * pmax(abs(m_hi - central), abs(m_lo - central)) / central) |>
+  dplyr::arrange(span_pct)
+
+save_csv(
+  budget |>
+    dplyr::transmute(
+      `Source of uncertainty`        = source,
+      `Gap (index points)`           = sprintf("%.2f to %.2f", gap_hi, gap_lo),
+      `Net position (GBP m p.a.)`    = sprintf("%.2f to %.2f", m_lo, m_hi),
+      `Span, per cent of central`    = round(span_pct)),
+  file.path(PATHS$tables, "fiscal_error_budget.csv"))
+
+message(sprintf("fiscal error budget (central %.2f GBP m, %.3f per index point):",
+                central, per_pt))
+walk(seq_len(nrow(budget)), \(i) message(sprintf(
+  "  %-46s %.2f - %.2f  (span %.0f%%)",
+  budget$source[i], budget$m_lo[i], budget$m_hi[i], budget$span_pct[i])))
+
+# --- macros for the preamble ------------------------------------------
+pick <- function(pat, col) {
+  i <- grep(pat, budget$source)[1]
+  if (is.na(i)) NA_real_ else budget[[col]][i]
+}
+cat(sprintf(paste0(
+  "\\renewcommand{\\fiscPerPt}{%.2f}\n",
+  "\\renewcommand{\\fiscNoiseLo}{%s}\n\\renewcommand{\\fiscNoiseHi}{%s}\n",
+  "\\renewcommand{\\fiscNoisePct}{%s}\n",
+  "\\renewcommand{\\fiscSampLo}{%s}\n\\renewcommand{\\fiscSampHi}{%s}\n",
+  "\\renewcommand{\\fiscMeasLo}{%s}\n\\renewcommand{\\fiscMeasHi}{%s}\n",
+  "\\renewcommand{\\fiscModelLo}{%s}\n\\renewcommand{\\fiscModelHi}{%s}\n",
+  "\\renewcommand{\\fiscModelPct}{%s}\n"),
+  per_pt,
+  r1(pick("Framing",  "m_lo")), r1(pick("Framing",  "m_hi")),
+  r0(pick("Framing",  "dev_pct")),
+  r1(pick("sampling", "m_lo")), r1(pick("sampling", "m_hi")),
+  r1(pick("Composed", "m_lo")), r1(pick("Composed", "m_hi")),
+  r1(pick("scoring model", "m_lo")), r1(pick("scoring model", "m_hi")),
+  r0(pick("scoring model", "span_pct"))))

@@ -2,12 +2,11 @@ source(here::here("R", "00_config.R"))
 
 panel <- read_csv(file.path(PATHS$cache, "region_panel.csv"), show_col_types = FALSE)
 
-# kappa band and automatable fraction; fall back to the calibration of
-# app:specifications and pi_k = 1 until the SFC files are supplied.
+
 calib <- tryCatch(read_csv(file.path(PATHS$sfc, "acemoglu_calibration.csv"),
                            show_col_types = FALSE),
                   error = function(e)
-                    tibble(scenario = c("lo", "central", "hi"), kappa = c(0.110, 0.144, 0.182)))
+                    tibble(scenario = c("lo", "central", "hi"), kappa = c(0.124, 0.154, 0.182)))
 pi_k <- tryCatch(read_csv(file.path(PATHS$sfc, "task_cost_share.csv"), show_col_types = FALSE),
                  error = function(e) distinct(panel, soc_uk) |> mutate(pi = 0.23))
 
@@ -36,7 +35,6 @@ diff_tbl |> filter(scenario == "central") |>
   mutate(line = sprintf("%s: %.3f pp", channel, diff)) |> pull(line) |>
   paste(collapse = " | ") |> message()
 
-# GDP translation if the SFC pass-through file is present.
 gdp <- tryCatch({
   g <- read_csv(file.path(PATHS$sfc, "gdp_passthrough.csv"), show_col_types = FALSE)
   proj |> filter(channel == "composite") |>
