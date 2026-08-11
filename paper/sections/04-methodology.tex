@@ -1,0 +1,238 @@
+\section{Methodology}\label{sec:method}
+
+% Note: the stability-score walk-through and the calibration-sample rationale now live in Appendix D.
+
+I build an exposure score for every occupation from language-model ratings of its constituent tasks, then weight those scores by Scottish and rUK employment. The scores are the novel input, so most of this section concerns how they are constructed and how far they can be trusted; the labour-market accounting that follows is comparatively standard.
+
+\subsection{Exposure scoring}\label{sec:scoring}
+
+The OBR score each O*NET task from 0--100 for its amenability to AI over a ten-year horizon, separating tasks AI could substitute for from those it would merely complement. They classify an occupation as exposed where enough of its task content clears some threshold. I adopt that architecture, its scoring scale and its substitute--complement distinction. However, their object is a single national figure with mine the difference between two regions. Additionally, they report point estimates without quantifying their dependence on the scoring framework, whereas I treat the scores as model-specific, only resting the regional claim on the component of the measurement that survives a change of model.
+% check OBR threshold values (70, 40) 
+
+\paragraph{Procedure.} I score the task content of every O*NET--SOC occupation $j$. For each task $t \in T_j$ the model returns two integer scores on $[0,100]$: a substitution score $s^{\mathrm{sub}}_{j,t}$, capturing the extent to which AI could perform the task without human involvement over the coming decade, and a complementarity score $s^{\mathrm{comp}}_{j,t}$, capturing the extent to which it could raise a worker's productivity in the task without replacing them. The prompt sets the horizon, copies in task description from O*NET, and directs the model to potential considerations bearing on each judgment, such as whether the task requires physical presence, tacit empathy, or non-delegable accountability.
+
+The two scores must then be combined into a single measure of how exposed a task is. For the exposure measurement I take the larger of the two, $s_{j,t} = \max(s^{\mathrm{sub}}_{j,t}, s^{\mathrm{comp}}_{j,t})$. I choose the maximum for commensurability, since it is the rule behind the OBR's single-amenability banding. That said, it is admittedly coarse, treating a task scored $(90,10)$ as no less exposed than one scored $(90,90)$, and as the maximum of two noisy scores it carries a small upward bias growing with the framing noise \citep{clark1961}. This is mitigated, firstly because the same rule applies to each region, so by \cref{prop:cancellation} its effect largely cancels in the differential. Which I verify by reporting the gap under the substitution score alone and under an alternative $s_{j,t} = s^{\mathrm{sub}}_{j,t} + \bigl(1 - s^{\mathrm{sub}}_{j,t}/100\bigr)\, s^{\mathrm{comp}}_{j,t}$ which treats complementarity as exposing only the share of a task left after substitution. Secondly, since substitution and complementarity have opposite-signed effects, they enter separately in \cref{sec:specs}.
+
+Task scores then aggregate to the occupation. The occupation-level score is the importance-weighted mean of its task scores,
+\begin{equation}\label{eq:aggregate}
+E_j \;=\; \frac{\sum_{t \in T_j} \omega_{j,t}\, s_{j,t}}
+               {\sum_{t \in T_j} \omega_{j,t}} \;\in\; [0,100],
+\end{equation}
+with O*NET importance weights $\omega_{j,t}$, so that an occupation's exposure is reflective of its most central tasks. 
+%Then, because the scores attach to US occupations, I map $E_j$ onto a UK SOC 2020 score $E_k$ for minor group $k$ through the crosswalk.
+
+Classification converts the continuous scores into the exposed and unexposed categories. A task is substituted where $s^{\mathrm{sub}}_{j,t} \ge \theta^{\mathrm{sub}}$, complemented where $s^{\mathrm{comp}}_{j,t} \ge \theta^{\mathrm{comp}}$ and the task is not substituted, and unexposed otherwise. My baseline thresholds are adopted from \citet{obr2025}, $(\theta^{\mathrm{sub}}, \theta^{\mathrm{comp}}) = (70, 40)$, applied at the task level.\footnote{Sensitivity of the classified indices to the threshold pair is reported at $(60,30)$ and $(80,50)$ alongside the baseline.} Weighting these task classes by importance in the same way as \cref{eq:aggregate} gives $\mathrm{Sub}_j$ and $\mathrm{Comp}_j$, the shares of an occupation's task content falling in each exposed class.
+
+Then, because the scores attach to US occupations, I map $E_j$, $\mathrm{Sub}_j$ and $\mathrm{Comp}_j$ through the crosswalk onto UK SOC 2020 minor group $k$, yielding the score $E_k$ and the corresponding shares $\mathrm{Sub}_k$ and $\mathrm{Comp}_k$, and classify at that level. Minor group $k$ is materially exposed where $\mathrm{Sub}_k + \mathrm{Comp}_k \ge \tfrac{1}{2}$, and an exposed minor group is substituted where $\mathrm{Sub}_k > \mathrm{Comp}_k$ and complemented otherwise. 
+%I depart from the OBR by eliciting the two channels separately rather than banding together into a single amenability score.
+%The importance-weighted shares of task content in the two exposed classes, $\mathrm{Sub}_j$ and $\mathrm{Comp}_j$, then classify the occupation. Occupation $j$ is materially exposed where $\mathrm{Sub}_j + \mathrm{Comp}_j \ge \tfrac{1}{2}$, and an exposed occupation is substituted or complemented according to the which of the two classes is larger. The importance-weighted shares of task content in the two exposed classes, $\mathrm{Sub}_j$ and $\mathrm{Comp}_j$, are carried through the crosswalk alongside $E_j$ and classification is applied at the UK minor group. Minor group k is materially exposed where $\mathrm{Sub}_k + \mathrm{Comp}_k \ge \tfrac{1}{2}$, and an exposed minor group is substituted where $\mathrm{Sub}_k > \mathrm{Sub}_k$ and complemented otherwise.
+%Where my rule departs is that the OBR band a single amenability score, whereas I elicit the two channels separately and let each face its own threshold. The Scottish composition question turns on the substitution--complementarity margin, and eliciting the two channels separately measures that margin directly, where bands of a single amenability score can only imply it. 
+O*NET records the tasks of an occupation, not of an occupation in a place, so the same $E_k$ applies in Scotland and the rUK. 
+
+%To guard against the prompt-sensitivity this literature has repeatedly flagged \citep{eloundou2024, yin2026}, I fix and freeze a single model and prompt before the main run, so that the only variation across occupations is genuine.\footnote{I record a SHA-256 hash of the frozen system message and user-message template together with every score, so any later change to either is detectable and the figures reproduce from the frozen configuration.}
+
+\subsection{Regional indices and the compositional structure of the gap}\label{sec:indices}
+
+The empirical question at hand is whether Scotland's workforce sits more or less in the path of this technology than the rest of the UK's. I develop an employment-weighted exposure index for each region: the exposure of a region's average job. For region $r \in \{\Scot, \rUK\}$, let $\eta_{k,r} = l^{\mathrm{pool}}_{k,r} \big/ \sum_{k'} l^{\mathrm{pool}}_{k',r}$ be the pooled employment share of minor group $k$. I form a classified exposed-employment share and a continuous index,
+\begin{equation}\label{eq:indices}
+\Ehat_r = \sum_k \eta_{k,r}\,
+  \ind{\mathrm{Class}(k) \in \{\mathrm{Sub}, \mathrm{Comp}\}},
+\qquad
+\Ebar_r = \sum_k \eta_{k,r}\, \frac{E_k}{100}
+  \;\in\; [0,1].
+\end{equation}
+The first answers what fraction of employment sits in materially exposed occupations. The second uses the full scores and is the object for which the formal results below are exact. The gap $\Delta\Ehat = \Ehat_{\Scot} - \Ehat_{\rUK}$, with its continuous form $\dEbar$, is the object of interest.
+
+%A shift-share decomposition makes precise what this gap can and cannot contain. 
+A shift-share decomposition makes clear that any regional difference in an employment-weighted index has, in principle, two sources. The regions may distribute their employment differently across occupations (composition), or the same occupation may be differently exposed in the two places (within-occupation):
+\begin{equation}\label{eq:shiftshare}
+\Delta\Ehat =
+\underbrace{\sum_k \bigl(\eta_{k,\Scot} - \eta_{k,\rUK}\bigr)\,
+  \ind{\mathrm{Exp}(k)}_{\rUK}}_{\text{composition}}
+\;+\;
+\underbrace{\sum_k \eta_{k,\Scot}\,
+  \bigl(\ind{\mathrm{Exp}(k)}_{\Scot} -
+        \ind{\mathrm{Exp}(k)}_{\rUK}\bigr)}_{\text{within-occupation}}
+\end{equation}
+Since the same score applies on both sides of the border, the within-occupation term vanishes because they are identical, and thus the entire gap is therefore compositional. Implying that any Scotland--rUK differential must reflect Scotland's distinctive occupational mix.
+
+A single assumption must be made for this composition reading.
+It is that the within-occupation task profile of each UK minor group is the same in both regions. The assumption is not that occupations are internally homogeneous; \citet{henseke2025} show they are not, with the highest score dispersion in occupations where a generic task description admits both an exposed and an unexposed reading. It is the weaker claim that whatever heterogeneity exists is distributed similarly in the two regions.
+
+\begin{assumption}[Region invariance]\label{as:reginv}
+Writing $T$ for a worker's task bundle, $k$ for their minor group and $R \in \{\Scot, \rUK\}$ for region, the conditional distribution of tasks is region-invariant,
+\begin{equation}\label{eq:reginv}
+\Pr(T \in A \mid k, R = \Scot) \;=\; \Pr(T \in A \mid k, R = \rUK)
+\quad \text{for all } A .
+\end{equation}
+\end{assumption}
+
+\noindent
+Internal homogeneity would require $T$ to be degenerate given $k$. What I need is only \cref{eq:reginv}, so that whatever within-occupation heterogeneity exists is distributed identically on either side of the border. 
+%Even this ovrstates what the differential requires: writing $e(\cdot)$ for task-level exposure, only the conditional means need agree, $\E[e(T) \mid k, \Scot] = \E[e(T) \mid k, \rUK]$, and any common departure of that mean from the O*NET-measured profile cancels from $\Delta\Ehat$ in any case. 
+This is reasonable for within one national economy since the qualifications, technologies, and regulatory standards that define an occupation are set at the UK level.
+The assumption fails only if task content differs across regions in a way correlated with exposure. I cannot test this directly without region-specific task data, but the international evidence suggests such within-occupation differences are small relative to composition \citep{handel2012, autor2013}. 
+% And where the assumption matters, it is needed only in differenced form: any error in $E_k$ common to both regions cancels from $\Delta\Ehat$, exactly as the model bias treated next does.
+
+%Finally, a single $E_k$ attaches to a minor group irrespective of the industry in which the occupation is employed. As a result, any occupation-by-industry variation in exposure is removed from the regional differential by construction.\footnote{Doing so would require industry-specific task data, which no available source provides.} For example, between the same accountant working in a bank and in a local authority. The design can still identify whether the Scotland--rUK gap arises from differences in industry composition or from differences in occupational composition within industries, and \cref{sec:anatomy} decomposes the differential along those lines. 
+
+\subsection{Scoring error and the robustness of the differential}\label{sec:noise}
+
+An occupation's task exposure score can be wrong for a few reasons, and the design responds to each of them separately. The framing noise from making a meaning-preserving change to the prompt is what the calibration of \cref{eq:variance} measures. Additionally, a particular LLM carries a persistent tendency to over- or under-score, and that systematic bias \citep{yin2026} is what \cref{prop:cancellation} addresses and the cross-model test of \cref{sec:crossmodel} probes. Aggregation and crosswalk error is addressed by the operator and threshold robustness, with sampling error in the employment weights handled the APS bootstrap.
+
+The cross-model divergence documented by \citet{yin2026} would be fatal to a study reporting absolute levels as objective measurements, but is, fortunately, far less threatening to a study of regional differences. Consider a score generated by model-$M$, decomposed as
+\begin{equation}\label{eq:decomposition}
+s_j \;=\; \theta^{\star}_j + b^{M}_j + \varepsilon_j,
+\qquad
+\varepsilon_j \sim N\bigl(0, \sigma^2_{g(j)}\bigr),
+\end{equation}
+where $\theta^{\star}_j$ is the unobserved cross-model consensus, $b^{M}_j$ is model $M$'s systematic bias (its persistent tendency to over or under-score occupation $j$), and $\varepsilon_j$ is mean-zero framing noise indexed by $g(j)$ as defined in the calibration below. The two error terms require different treatment. The noise term $\varepsilon_j$ can be reduced through averaging and simulation, whilst the model-specific bias $b^{M}_j$ identified by \citet{yin2026}, cannot, affecting every absolute estimate a model produces. In the following I show how this component conveniently cancels in the regional differential.
+
+Conditioning on the frozen model absorbs $b^{M}_j$ into a model-specific target $\theta^{M}_j = \theta^{\star}_j + b^{M}_j$, leaving the classical measurement model $s_j = \theta^{M}_j + \varepsilon_j$, with group variances $\sigma^2_{g(j)}$ to be calibrated below. Writing the continuous UK score as $E^{M}_k = E^{\star}_k + b^{M}_k$, the cancellation result follows.
+
+\begin{proposition}[Common-mode cancellation]\label{prop:cancellation}
+The model-induced error in the differential $\dEbar^{M} = \Ebar^{M}_{\Scot} - \Ebar^{M}_{\rUK}$ is
+\begin{equation}\label{eq:prop1}
+\dEbar^{M} - \dEbar^{\star} \;=\;
+\frac{1}{100} \sum_k \bigl(\eta_{k,\Scot} - \eta_{k,\rUK}\bigr)\,
+b^{M}_k .
+\end{equation}
+Hence (i) a pure level shift $b^{M}_k = b^{M}$ leaves the differential exact, $\dEbar^{M} = \dEbar^{\star}$; and (ii) mean bias is removed by construction, with only the part of the bias co-varying with the regional employment-share gap surviving.
+\end{proposition}
+
+\noindent
+See \Cref{app:proofs} for the proof of \cref{prop:cancellation}.
+%Employment shares are proper weights within each region, so each set sums to one and the share gaps sum to zero,
+%$$\sum_k \Delta\eta_k = \sum_k \eta_{k,\Scot} - \sum_k \eta_{k,\rUK} = 1 - 1 = 0 .$$
+%Any component of the bias common to all occupations is therefore multiplied by zero and vanishes, exiting the covariance between the share gap and the demeaned bias. \Cref{app:proofs} gives the full derivation.
+
+%The absolute index $\Ebar^{M}_r$ carries contamination of the order of the mean bias, which is what the three-fold divergence of \citet{yin2026} measures. 
+The differential therefore retains only the part of the bias co-varying with the cross-region employment-share gap, which \cref{sec:crossmodel} measures. The same compositional weighting that zeroes the within-occupation term of \cref{eq:shiftshare} removes the common-mode bias, so \textit{the differential is robust where the levels are fragile}. 
+
+This proposition implies that for any set of scores generated by a particular model, the cancellation result applies, and it can be shown the bias is bounded by the Cauchy-Schwarz inequality:
+
+\begin{corollary}[Cross-model stability]\label{cor:crossmodel}
+For any two models $M$ and $M'$,
+\begin{equation}\label{eq:cor1}
+\dEbar^{M} - \dEbar^{M'} \;=\;
+\frac{1}{100} \sum_k \Delta\eta_k
+\bigl(b^{M}_k - b^{M'}_k\bigr),
+\qquad
+\bigl|\dEbar^{M} - \dEbar^{M'}\bigr| \;\le\;
+\frac{1}{100}\,\bigl\lVert \Delta\eta \bigr\rVert_2\,
+\bigl\lVert b^{M} - b^{M'} \bigr\rVert_2 ,
+\end{equation}
+where $\Delta\eta_k = \eta_{k,\Scot} - \eta_{k,\rUK}$ and the bias differences are demeaned. The cross-model movement in the differential is zero under a common level shift and bounded by how aligned the bias difference is with the share gap. See \cref{app:proofs} for full discussion.
+\end{corollary}
+
+\noindent
+Now, \cref{prop:cancellation} protects the differential only against an additive bias such as that in \Cref{eq:decomposition}. However, a model may instead disagree about the scale of the index, compressing or stretching the score distribution while preserving the ordering. The next corollary covers that case, which \cref{sec:crossmodel} shows is the one the data present.
+
+\begin{corollary}[Affine bias and scale-free differentials]\label{cor:affine}
+Suppose model $M$'s scores are affine in the latent up to an idiosyncratic term,
+$E^{M}_k = a^{M} + c^{M} E^{\star}_k + b^{M}_k$ with $c^{M} > 0$. Then
+\begin{equation}\label{eq:cor2}
+\dEbar^{M} \;=\; c^{M}\, \dEbar^{\star} \;+\;
+\frac{1}{100} \sum_k \Delta\eta_k\, b^{M}_k .
+\end{equation}
+Hence (i) by \cref{prop:cancellation} the intercept $a^{M}$ cancels exactly, with the slope rescaling the differential proportionally rather than cancelling; (ii) writing $\mathrm{SD}^{M}$ for the employment-weighted standard deviation of $\{E^{M}_k\}$, the standardised differential $\dEbar^{M}/\mathrm{SD}^{M}$ removes both $a^{M}$ and $c^{M}$, exactly when $b^{M}_k \equiv 0$ and up to the residual term otherwise; and (iii) replacing each score by its employment-weighted percentile rank yields a differential invariant to \emph{any} strictly increasing transformation of the scale, of which the affine map is a special case. See \cref{app:proofs} for full discussion.
+\end{corollary}
+
+\noindent
+Moving forward it will be useful to define that a statement about the differential is \textit{scale-free} when it does not depend on how widely the index happens to be spread under a given model. 
+%Such a statement locates Scotland relative to the dispersion of UK occupations, and not at a distance in one model's units.
+\Cref{cor:affine} offers two: dividing by the model’s own dispersion keeps the differential comparable
+with other standardised gaps but only under affine transformations, whereas percentile ranks undo any monotone transformation at the price of discarding everything but order
+
+%The results answer different failures. 
+\Cref{prop:cancellation} handles a model that reads the whole economy as more or less exposed, and \cref{cor:affine} one that uses more or less of the available scale. That is, re-drawing the scores from a different model should move the levels, rescale the differential, and leave its sign and scale-free magnitude unchanged. I test this by re-scoring the full task set on two alternative models and comparing the cross-model stability of $\dEbar$ against that of $\Ehat_{\Scot}$ and $\Ehat_{\rUK}$ individually.\footnote{I use one model from a different provider (OpenAI's GPT-4o) and one from a different tier of the same provider (Anthropic's Claude Haiku 4.5).} If the levels move while the gap holds, the regional finding survives the critique that undermines the absolute numbers.
+
+\paragraph{Calibration and propagation.} Differencing handles the bias, but the noise still has to be measured. Framing noise is the variation in a score under prompt changes that leave its meaning intact, and I estimate its variance rather than assume a form for it. I draw $N=90$ occupations, eighteen from each of five broad occupational families $g(j)$ obtained by collapsing major groups onto their leading digit, and re-score each one's full task set under the conditions of \cref{tab:calibration}.\footnote{Ten per family are drawn at random to estimate the variance and eight nearest the classification boundary are held out for the stability check and \cref{app:calibration} sets out the partition reasoning.} Four of the conditions are meaning-preserving perturbations of the frozen prompt and the disagreement among them identifies the noise. Writing $K$ for that set, with $|K| = 4$,
+\begin{equation}\label{eq:variance}
+\widehat{\sigma}^2_j \;=\;
+\frac{1}{|K| - 1} \sum_{k \in K}
+\bigl(s^{(k)}_j - \bar{s}_j\bigr)^2,
+\qquad
+\widehat{\sigma}^2_g \;=\;
+\frac{1}{|J_g|} \sum_{j \in J_g} \widehat{\sigma}^2_j ,
+\end{equation}
+where $J_g$ collects the randomly sampled occupations of family $g$. The remaining two conditions, a five-year horizon and a single composite score, change the question itself and are reported as sensitivities.
+%and a shorter horizon is not an error in measuring the ten-year one. 
+%I therefore report their occupation-level shifts as named sensitivities and do not pool them into $\widehat{\sigma}^2_g$.\footnote{Pooling them would conflate framing noise with a change of estimand and overstate the variance to which the propagation applies. By \cref{prop:cancellation}, the component of either shift common across occupations is in any case innocuous for the differential.}
+
+\begin{table}[t]
+\centering
+\caption{Calibration design: scoring conditions and the role of each}
+\label{tab:calibration}
+\small
+\begin{tabular}{lll}
+\toprule
+Variant & What changes & Role \\
+\midrule
+V0 & Baseline prompt, 10-year horizon & noise (reference) \\
+V1 & Assessment criteria in reverse order & noise: order and anchoring \\
+V2 & Paraphrased rubric, identical content & noise: wording \\
+V3 & Task presented before occupation & noise: framing \\
+V4 & 5-year horizon, else identical & estimand sensitivity: horizon \\
+V5 & Single composite score & estimand sensitivity: rubric form \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+The within-model variance is estimated from V0, V1, V2 and V3 on the random sample only.; V4 and V5 are reported as named sensitivities. Cross-model contrasts come from the full re-scores under the two alternative models.
+\end{minipage}
+\end{table}
+
+I propagate this variance into the continuous aggregates by simulation. Across $R = 1{,}000$ draws I perturb each occupation score, $s^{(r)}_j \sim N\bigl(s_j, \widehat{\sigma}^2_{g(j)}\bigr)$ truncated to $[0,100]$, re-aggregate to UK minor groups, re-weight, and record $\dEbar^{(r)}$, reporting the 95\% interval and the share of draws keeping the sign. Because independent draws understate aggregate uncertainty if framing errors move together, I also allow errors clustered within occupational family, with intraclass correlation $\rho \in \{0, 0.2, 0.4\}$, the higher values being more cautious. \cref{app:proofs} derives the inflation factor.
+%The uncertainty propagation is carried out on the continuous index by design. It is the object for which \cref{prop:cancellation} holds exactly and for which the noise model in \cref{eq:variance} is defined. 
+
+Alongside the scoring draws, I bootstrap the pooled employment shares over persons within region and year while combining the two independent sources of uncertainty to construct an interval for $\dEbar$. To show their relative importance, I also report the scoring and sampling intervals separately.
+
+The classified share is nonlinear at the thresholds since a disturbance to a task near a cut-off flips its class, and with it the occupation's. I therefore give each occupation a stability score, defined as the importance-weighted probability that its task content keeps its class under re-framing, constructed in \cref{app:calibration} along with the landmark I flag against.
+%It turns out not to bind anywhere, so \cref{sec:fragility} compares the held-out boundary sample against the random one and the stability apparatus enters as a null diagnostic.
+
+\subsection{Empirical specifications}\label{sec:specs}
+The productivity projection converts an exposure gap into the fiscally useful units, with the wage regression serving as the micro counterpart of the variance propagation, whilst providing the exposure--pay alignment the translation needs. 
+%Additionally, the crossing from the projected productivity differential to the income tax net position, is arithmetic on those estimates and on the block grant adjustment rules rather than an estimation problem, so it has no specification to state ahead of the data and is set out in \cref{sec:translation} where it is used. None is offered as a causal estimate.
+ 
+The wage specification estimates the exposure--wage relationship at worker level,
+\begin{equation}\label{eq:wage}
+\ln w_{i,t} = \alpha + \beta_1 E_{j(i)} + \beta_2\, \Scot_i +
+\beta_3 \bigl( E_{j(i)} \times \Scot_i \bigr) + \gamma X_{i,t} +
+\delta_s + \delta_t + \varepsilon_{i,t},
+\end{equation}
+where $\ln w_{i,t}$ is the log gross hourly pay of worker $i$ in survey year $t$, $E_{j(i)} \in [0,1]$ is the continuous exposure score of the worker's minor group $j(i)$, common to both regions and constant within an occupation, and $\Scot_i$ indicates residence in Scotland. The coefficient $\beta_1$ is the rUK gradient of pay in exposure, $\beta_2$ the Scotland wage-level shift, and $\beta_3$, the object of interest, the Scotland-specific rotation of that gradient. The controls $X_{i,t}$ are age, its square, sex and full-time status; $\delta_s$ and $\delta_t$ are industry-section and survey-year fixed effects; and observations are weighted by the APS income weight. Two further controls enter the richer specifications. Highest qualification is included as exposed occupations are graduate-heavy, so any Scotland--rUK difference in the within-occupation qualification profile would otherwise load onto $\beta_3$; and a public-sector indicator since published findings have shown Scotland's public sector workforce and pay have grown faster than the rest of the UK \citep{cribb2025}. $E_{j(i)}$ varies only across occupations, every worker in a minor group shares one value of the regressor and the within-group correlation of residuals inflates conventional standard errors by the Moulton factor \citep{moulton1990}. I therefore cluster by occupation, the level at which the regressor varies.
+
+The productivity projection in \cref{sec:translation} translates the exposure differential into productivity, using the task-based framework of \citet{acemoglu2025} as parameterised by the \citet{obr2025}. In that framework, AI raises total factor productivity by lowering the cost of the tasks it can perform, so the gain to a region depends on how much of its employment sits in exposed work. The proportional TFP gain for region $r$ is
+\begin{equation}\label{eq:tfp}
+\Delta \ln \mathrm{TFP}_r \;\approx\;
+\kappa \sum_k \eta_{k,r}\, \pi_k\, \Ebar_k .
+\end{equation}
+Where $\pi_k$ is the task-cost share and $\kappa$ the calibrated average cost saving on exposed tasks. 
+%The economics of substitution and complementarity enter differently here with cost saving on tasks the technology takes over; the second augments the worker who is retained. I
+%therefore run the projection on the two channels separately rather than on their maximum, mapping the substitution channel to the cost-saving term above and reporting the complementarity channel alongside it. I also report the composite version for comparability with the OBR exercise. 
+I import $\kappa$ and the automatable fraction $\pi_k = \pi = 0.23$ from the OBR/Acemoglu calibration rather than estimating them, so the Scottish and rUK paths differ only through their employment-weighted exposure. 
+%\Cref{eq:tfp} is simply the exposure index with each occupation's score multiplied by a coefficient before the employment weights are applied. Whether the cancellation survives that re-weighting depends on the coefficients.
+
+\begin{corollary}[Downstream linear functionals]\label{cor:functionals}
+Let $F^{M}_r = \sum_k \eta_{k,r}\, q_k E^{M}_k$ with coefficients $q_k \ge 0$ common
+to both regions, and write $\bar{Q}_r = \sum_k \eta_{k,r} q_k$. Then
+\begin{equation}\label{eq:cor3}
+\Delta F^{M} - \Delta F^{\star} \;=\; \sum_k \Delta\eta_k\, q_k\, b^{M}_k ,
+\end{equation}
+which under a pure level shift $b^{M}_k = b^{M}$ reduces to
+$b^{M}\bigl(\bar{Q}_{\Scot} - \bar{Q}_{\rUK}\bigr)$. Constant coefficients
+$q_k = q$ are therefore sufficient for exact cancellation. See \cref{app:proofs}.
+\end{corollary}
+
+\noindent
+\Cref{eq:tfp} is simply the exposure index again, each score multiplied by a coefficient before the employment weights apply. \Cref{prop:cancellation} works because employment shares gaps sum to zero. Now, weighting each gap by $q_k$ undoes that unless the coefficients are flat across occupations. Where they are not, a level shift survives, scaled by the cross-region difference in average loading. In this case, the calibration sets $\pi_k = \pi$ for every occupation, so $q_k = \kappa\pi$ is flat so by \cref{cor:functionals} each channel's TFP differential is a fixed multiple of $\dEbar$, inheriting the cancellation exactly. 
+%The additive bias cancels as it does from the index; the scale factor $c^{M}$ of \cref{cor:affine} does not, so the projected magnitude is exactly as model-dependent as the index-point gap.
+
+%\noindent
+%\Cref{prop:cancellation} works because employment shares are proper weights, so their gaps sum to zero; weighting each gap by $c_k$ destroys that unless the coefficients are flat across occupations. Where they are not, a model that reads the whole economy as more exposed still contaminates the differential, by the level shift times the cross-region difference in average coefficient loading.
+%Here $\pi_k = \pi$ for every occupation, so the coefficients are flat by construction and the projected differential inherits \cref{prop:cancellation} exactly, by \cref{cor:functionals}.
+%Here $\pi_k$ is constant in $k$, so the regional differential in each channel's implied TFP path inherits the cancellation of \cref{prop:cancellation} exactly, by \cref{cor:functionals}. Additionally, then for the same reason, the projected differential is a fixed multiple of $\dEbar$. Thus, the additive model bias cancels from it as it does from the index, but the scale factor $c^{M}$ of \cref{cor:affine} passes through undiminished, meaning the projected magnitude is exactly as model-dependent as the index-point gap. 
+%\Cref{sec:budget} carries that observation to the end of the chain and prices it against the other uncertainties the translation carries. 
+\Cref{app:specifications} derives \cref{eq:tfp} and sources the calibration figures in full. 
+%The contribution is the regional differential in the implied path, not a reassessment of Acemoglu's headline magnitude.

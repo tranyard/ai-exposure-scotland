@@ -1,0 +1,30 @@
+\section{Data}\label{sec:data}
+
+Occupational task content comes from O*NET, regional employment weights and worker-level earnings from the Annual Population Survey (APS), and a published crosswalk links the task data to the survey. I describe each in turn, deferring the construction of the exposure score itself, that is the scoring of tasks, the importance weighting, and the classification rule, to \cref{sec:method}.
+
+\subsection{O*NET task content and the exposure score}\label{sec:onet}
+
+O*NET is the occupational database maintained by the US Department of Labor, and is the most comprehensive task taxonomy available (the UK has no domestic equivalent).\footnote{I use release 30.3, available at: \url{https://www.onetonline.org}} For each O*NET--SOC occupation $j$ the database records a set of task statements describing the discrete activities the work comprises, together with an Importance rating for each task on a five-point scale, measuring the degree to which a specific activity is required for a particular occupation. The task statements are the input the language model scores, and the importance ratings supply the weights $\omega_{j,t}$ in the occupation-level aggregate of \cref{sec:method}. The cleaned file contains 17,945 occupation--task pairs across 894 occupations.
+
+%The exposure score $E_j \in [0,100]$ does not appear in the source data, and is therefore a constructed by the procedure set out in \cref{sec:scoring}. 
+Now, O*NET records the tasks of an occupation, not of an occupation in a place, so a single score attaches to each occupation and carries no regional variation by construction. Additionally, because the scores attach to US occupations, they are of use to a UK study only once mapped onto the domestic classification, which is the role of the crosswalk. 
+%The maintained assumption that within-occupation task content does not differ across UK regions, in the region-invariance form of \cref{as:reginv}, is later stated and defended.
+
+
+\subsection{Crosswalk to UK SOC 2020}\label{sec:crosswalk}
+
+The exposure scores are indexed by O*NET--SOC occupation, whereas the employment weights are recorded under UK SOC 2020. I bridge the two with a published concordance that maps O*NET--SOC 2019 codes to UK SOC 2020 unit groups, from which I form a continuous score $E^{\mathrm{UK}}_k$ for minor group $k$.\footnote{Retrieved from: \url{https://www.nfer.ac.uk/media/1tojrw0o/matching_uk_soc2020_to_o_net.pdf}} I work at the three-digit minor-group level, which trades a degree of occupational resolution for enough observations to support reliable regional employment shares once survey waves are pooled. Working at three digits averages away any Scotland--rUK sorting that happens within a minor group, just how a coarse geography compresses spatial variation. The public APS can't go finer than this, so the reported gap is to be seen as a lower bound.
+%That is the binding constraint for Scotland, where finer groupings thin out quickly, and the coarser working level is also what makes the region-invariance assumption more comfortable, since averaging over a minor group smooths the fine distinctions along which any residual regional difference in task content would appear \citep{autor2013}. 
+The concordance is many-to-many, so an aggregation rule is required; \cref{app:data} states the rule I use and reports the differential under two alternatives.
+
+\subsection{Annual Population Survey employment weights}\label{sec:aps}
+
+The APS is the Office for National Statistics' largest household survey, formed by pooling the quarterly Labour Force Survey with added regional samples, and is the standard source for sub-national labour-market statistics. It distinguishes individuals by country and region, allowing Scotland to be observed directly and the rest of the UK (rUK) to be constructed as the aggregate of all other UK regions. From the APS I obtain weighted employment counts by SOC 2020 occupation for each region.
+
+I pool four waves, 2022--2025, because a single wave leaves too many Scottish minor groups too thinly sampled for the employment shares to be precise, and the window is short enough that occupational structure is stable across it. The pooled employment counts $l^{\mathrm{pool}}_{k,r}$ construct the regional employment shares $\eta_{k,r}$, and since exposure scores are common to all regions these shares are the only source of regional variation in the study.
+
+The pooled shares remain survey estimates, with Scotland's thinner observation blocks carrying the larger sampling error. That error is independent of the scoring noise of \cref{sec:noise} and, as \cref{tab:propagation} shows, several times larger in the differential, so I propagate both jointly and \cref{tab:propagation} reports each separately and in combination. Two features of the APS design, recorded in \cref{app:data}, mean the resulting interval is not an exact coverage statement: the overlapping-wave structure that a person-level bootstrap treats as independent draws, and the 2022--24 fall in LFS response rates.
+
+\subsection{Earnings}\label{sec:earnings}
+
+Worker-level earnings also come from the pooled APS waves. The dependent variable is the APS derived gross hourly pay for employees, recorded alongside the occupation, industry, region, age, sex, full-time status, highest qualification and public-sector indicator that the wage regression of \cref{sec:specs} uses. The earnings and employment results rest on a single consistent source, and, since the APS is public, the wage regressions reproduce without a restricted-data agreement.\footnote{The employer-reported Annual Survey of Hours and Earnings (ASHE), securely accessed from the UK Data Service, is the more accurate earnings source, since pay is returned by employers rather than recalled by respondents.}

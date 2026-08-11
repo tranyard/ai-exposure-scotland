@@ -1,0 +1,49 @@
+\section{Scoring Protocol and Audit Trail}\label{app:protocol}
+
+This appendix documents the frozen configuration in enough detail for the exercise to be reproduced or audited independently. \Cref{tab:frozenconfig} records it.
+
+\subsection{Frozen configuration}
+
+I fix a single model and freeze prompt before the main run. Decoding is deterministic to the extent the providers allow: the temperature is set to zero and no sampling parameter is varied across the run. To make any later change to the elicitation detectable, the scoring script records a SHA-256 hash covering the system message and the user-message template jointly, so the figures either reproduce from the recorded configuration or else fail to match the hash.
+
+\begin{table}[h]
+\centering
+\caption{Frozen scoring configuration}
+\label{tab:frozenconfig}
+\small
+\begin{tabular}{@{}lp{0.62\textwidth}@{}}
+\toprule
+Item & Value \\
+\midrule
+\multicolumn{2}{l}{\textit{Baseline run}} \\
+Provider / model snapshot & Anthropic, \texttt{claude-sonnet-4-6} \\
+Transport                 & Anthropic Batch API  \\
+Run date                  & 8 July 2026 \\
+Temperature               & 0 \\
+Maximum output tokens     & 150 \\
+Top-$p$ / top-$k$         & not set (provider default) \\
+Seed                      & none; the Messages API exposes no seed parameter \\
+Retries / concurrency     & 2 retries; 8 concurrent requests on the synchronous path \\
+Response format           & single JSON object, keys \texttt{substitution}, \texttt{complementarity}, \texttt{primary\_mode}, \texttt{key\_factors} \\
+Prompt SHA-256            & \seqsplit{8e831d4ea7c85bb9962c71a7fbf15672bb681b4fb33a61a1df4735c8c6ea175a} \\
+V0 batch identifier       & \seqsplit{msgbatch\_01Gvienm9x6cVRoVcpEcP7Qf} \\
+\addlinespace
+\multicolumn{2}{l}{\textit{Cross-model arm (\cref{sec:crossmodel})}} \\
+Alternative provider      & OpenAI, \texttt{gpt-4o-2024-11-20}, Batch API; \texttt{response\_format} = \texttt{json\_object}, same temperature and token cap \\
+Alternative tier          & Anthropic, \texttt{claude-haiku-4-5-20251001}, same transport as baseline \\
+\addlinespace
+\multicolumn{2}{l}{\textit{Elicitation}} \\
+Horizon                   & 10 years, from a base year of 2026 \\
+Scoring scale             & two integer scores on $[0,100]$: substitution and complementarity \\
+Criteria                  & six fixed considerations, presented in a fixed order \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Prompt and rubric}
+
+The system message casts the model as an economist assessing what artificial intelligence can do to a stated O*NET task within the horizon, instructs it to assume capability progress continues at approximately the pace observed between 2020 and 2025, and asks for two scores: a substitution score for the extent to which AI could perform the task end-to-end with no meaningful human involvement, and a complementarity score for the extent to which it could raise the productivity of a worker who is retained. The six considerations the model is directed to weigh cover information-processing content, physical dexterity in unstructured settings, empathy and non-delegable accountability, genuine novelty, verifiability of output, and routinisation. The user message supplies the occupation title and the task text verbatim from O*NET. The full prompt text, the paraphrased variant and the remaining calibration perturbations are reproduced in the replication archive and can be provided on request.
+
+%\subsection{Completeness of the run}
+
+%The baseline run scores all 17,945 task--occupation pairs across 894 O*NET occupations, this being the set of task statements carrying an unsuppressed Importance rating in release 30.3. One occupation, 19-4012.01, loses a single task (4.4\% of its importance mass) to an unparseable response, and every other occupation is scored in full. The replication archive contains the task-level scores for the baseline and for both alternative models, the calibration variants, the prompt text and its hash, the batch identifiers, the analysis code, and an environment lock file recording the R and package versions used.

@@ -1,0 +1,78 @@
+\section{Descriptive Statistics: Scotland against the Rest of the UK}\label{app:descriptives}
+
+The exposure differential of \cref{sec:differential} is small in absolute terms, and its interest rests on the claim that the two economies it compares are structurally different in ways a fiscal authority already has to track. This appendix records those differences directly, before any exposure score enters, so that the compositional result can be read against the baseline it modifies rather than in isolation.
+
+\subsection{The fiscal setting}
+
+\Cref{tab:context} collects the aggregate quantities that make the comparison a budgetary one rather than a descriptive curiosity. Two features of the block grant adjustment do the work. Because the adjustment is indexed to rUK per-capita growth, the Scottish budget turns on the Scotland--rUK differential and not on the level of Scottish revenue, so a structural difference that moves Scottish earnings relative to rUK earnings passes straight into the net position. And because outturn is reconciled against forecast three years later, a persistent differential is applied afresh at each reconciliation rather than averaging out across them.
+
+\begin{table}[h]
+\centering
+\caption{Scotland and the rest of the UK: fiscal and structural context}
+\label{tab:context}
+\small
+\begin{tabular}{lccl}
+\toprule
+ & Scotland & Comparator & Source \\
+\midrule
+\multicolumn{4}{l}{\textit{Panel A: fiscal position}} \\
+NSND income tax revenue, 2024--25 (\pounds bn) & 18.6 & --- &
+  \citet{hmrcoutturn2025} \\
+Forecast income tax net position, 2026--27 (\pounds m) & 969 & --- &
+  \citet{sfc2026} \\
+\addlinespace
+\multicolumn{4}{l}{\textit{Panel B: structural differences}} \\
+Public sector share of employment (\%) & $\approx 22$ & $\approx 18$ (UK) &
+  \citet{scotgov2024} \\
+Services share of GDP (\%) & 77.1 & 80.5 (UK) &
+  \citet{scotgov2024} \\
+Public sector pay relative to UK median (\%) & $\approx +5$ & --- &
+  \citet{cribb2025} \\
+Population growth, year to mid-2024 (\%) & 0.7 & 1.2 (England) &
+  \citet{park2023} \\
+ &  & 1.1 (UK) &  \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Published aggregates, reported to indicate the scale of the structural differences the compositional analysis works within. The population row is the channel \cref{sec:fiscal} identifies as dominating per-capita indexation and does not quantify; it is recorded here because it runs through the same arithmetic as the earnings channel that \cref{tab:fiscal} does trace.
+\end{minipage}
+\end{table}
+
+The two panels are of different orders. Panel A fixes the budgetary quantities that any differential is eventually measured against; Panel B records differences in composition and demography that are large by comparison with the exposure gap this dissertation measures. The public sector share alone differs by about four percentage points of employment, which is more than twice the largest single Scotland--rUK difference in any of the 104 occupational minor groups. The exposure differential is not competing with these for importance. It is a distinct channel that runs through the same indexation arithmetic, and its claim on attention is that its direction is persistent and its sign is measurable, not that its magnitude rivals theirs.
+
+\subsection{Occupational and industrial composition}
+
+\Cref{tab:descriptives} reports the pooled 2022--2025 APS employment distribution across one-digit SOC major groups for the two regions, and \cref{tab:descindustry} the corresponding distribution across SIC 2007 sections. These are the primitives from which the employment shares $\eta_{k,r}$ of \cref{eq:indices} are built, aggregated to a level at which the pattern is legible.
+
+\begin{table}[h]
+\centering
+\caption{Employment composition by SOC major group, pooled APS 2022--2025}
+\label{tab:descriptives}
+\small
+\input{tables/regional_descriptives}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Shares of regional employment, in per cent, weighted by the APS person weight and pooled across the four waves. The difference column is Scotland minus rUK, in percentage points. The earnings and worker-characteristic rows are computed on the employee subsample for which gross hourly pay is recorded, weighted by the APS income weight.
+\end{minipage}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Employment composition by SIC 2007 section, pooled APS 2022--2025}
+\label{tab:descindustry}
+\small
+\input{tables/regional_industry_shares}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Shares of regional employment for which industry is recorded, in per cent. The difference column is Scotland minus rUK, in percentage points. Section names are abbreviated from the official SIC 2007 titles.
+\end{minipage}
+\end{table}
+
+Three patterns in these tables carry into the results. The first is the professional-management underweight. Scotland carries a smaller share of employment in the managerial and professional groups that sit at the top of the exposure distribution, and the largest single contribution to the headline gap in \cref{tab:decomposition}, functional managers and directors at $-1.58$ percentage points of employment, is the sharpest instance of it. The second is the care and elementary-services overweight, visible in caring personal services ($+1.07$ points) and other elementary services ($+0.76$), which is where Scotland's larger public sector shows up at occupational rather than sectoral level. The third is that the industrial differences are milder than the occupational ones: Scotland is underweight in professional, scientific and information services and overweight in public administration, mining and energy, but only marginally different in finance, which is why the industry-mix term of \cref{tab:industry} accounts for only about a fifth of the differential and the within-industry term for the rest.
+
+The scale of these differences bears emphasis, because it explains the size of the result rather than diminishing it. Across the 104 minor groups the largest single Scotland--rUK share difference is 1.6 percentage points of employment, and the two share vectors are close to collinear. Over an observed score range of 32--84 index points, compositional differences that small cannot generate a large aggregate exposure gap under any assignment of scores. What the continuous index recovers is the sign and the anatomy of a difference the data can support, and \cref{sec:crossmodel} establishes that both survive a change of scoring model.
+
+\subsection{Earnings}
+
+The earnings rows of \cref{tab:descriptives} record the level differences the wage analysis of \cref{sec:wages} conditions on. Scotland's employee pay distribution sits close to the rUK's in the middle and below it at the top, which is the aggregate signature of the schedule rotation that \cref{tab:wagespecs} estimates: against the ex-London comparator, Scottish pay carries a premium of about 8\% at the least-exposed end of the occupational distribution, crosses at 73.8 index points, and sits about 2\% below at the most exposed end. The public-sector pay premium of \citet{cribb2025} operates on the level of that schedule and Scotland's larger public sector magnifies it, which is why the specification of \cref{eq:wage} carries a public-sector indicator and why the Scotland interaction is read as a rotation rather than a shift.

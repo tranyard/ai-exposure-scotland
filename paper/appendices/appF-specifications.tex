@@ -1,0 +1,68 @@
+\section{Specifications and Projection Detail}\label{app:specifications}
+
+I derive the fiscal extension in full, along with the parameter it inherits.
+
+\subsection{Productivity calibration}
+
+\paragraph{Where \cref{eq:tfp} comes from.} Let the final good be produced under constant returns from a set of tasks with prices $p_1, \dots, p_N$ and unit cost function $c(p_1, \dots, p_N)$, homogeneous of degree one. By Shephard's lemma the cost-minimising task demands are $\partial c / \partial p_n$, so
+\begin{equation}\label{eq:shares}
+\varsigma_n \;=\; \frac{\partial \ln c}{\partial \ln p_n}
+\;=\; \frac{p_n \, (\partial c / \partial p_n)}{c}
+\end{equation}
+is the Shephard cost share of task $n$, and the shares sum to one by Euler's theorem under linear homogeneity. If AI lowers the cost of task $n$ by the fraction $\kappa_n$, so that $d \ln p_n = -\kappa_n$, then totally differentiating gives $d \ln c = \sum_n \varsigma_n \, d\ln p_n = - \sum_n \varsigma_n \kappa_n$, and since total factor productivity is the inverse of unit cost at fixed input prices,
+\begin{equation}\label{eq:hulten}
+\Delta \ln \mathrm{TFP} \;=\; -\, d \ln c \;=\; \sum_n \varsigma_n \, \kappa_n .
+\end{equation}
+This is \citet{hulten1978} applied at the task rather than the sector level, which is the step \citet{acemoglu2025} takes within the task framework of \citet{acemoglu2019}. Aggregating \cref{eq:hulten} over a region's employment distribution requires one further step, and it is where the second parameter of \cref{eq:tfp} enters. Set $\kappa_n = \kappa$ on tasks AI performs and zero otherwise. Exposure identifies the task content AI could perform, and only a fraction $\pi$ of that content is profitably automated over the horizon, so the displaced cost share of minor group $k$ is $\pi \Ebar_k$ rather than $\Ebar_k$. Substituting into \cref{eq:hulten} and weighting by employment gives \cref{eq:tfp}. 
+%The two parameters are therefore distinct objects: $\varsigma_n$ in \cref{eq:shares} is a Shephard cost share that sums to one across tasks, whereas $\pi$ in \cref{eq:tfp} is an automatable fraction bounded in $[0,1]$ and constant across occupations. Only the latter is calibrated.
+
+\paragraph{The imported parameters.}
+%The exposure measurement is my own and the architecture follows \citet{obr2025}; the productivity parameters are Acemoglu's, bar the high cost-saving setting.
+The average cost saving on an exposed task, $\kappa$, rests on the two task-level randomised experiments \citet{acemoglu2025} relies on: \citet{noy2023} on mid-level professional writing, and \citet{brynjolfsson2025} on customer-support agents. He reads these as labour cost savings of 40\% and 14\% respectively, and converts their average of 27\% into an overall cost saving by multiplying through a labour share of 0.57, giving $0.27 \times 0.57 = 0.154$. That is the central setting, and it reproduces his headline: $0.199 \times 0.23 \times 0.154 = 0.0071$, the 0.71\% ten-year TFP gain he reports as an upper bound. 
+%Applying the 27\% labour figure directly as $\kappa$ would skip the labour-share conversion, and is a change of units rather than a scenario.
+
+The low setting comes from his refinement for hard-to-learn tasks. Splitting exposed tasks into easy and hard, he assigns the 27\% saving to the easy 74\% and a quarter of it to the remainder, giving overall savings of 0.154 and 0.040, so that $0.033 \times 0.154 + 0.012 \times 0.040 = 0.0056$ and the ten-year gain falls to 0.55\%. Since $\kappa$ is constant across occupations here, I carry that refinement as a combined saving over all impacted tasks, $0.0056 / 0.045 = 0.124$. Acemoglu regards the hard-task figure as the more reasonable of the two, so the low column is his preferred case rather than a pessimistic tail. The high setting is the \citet{obr2025} figure: a task-level cost saving of 32\% against the same 0.57 labour share, giving $0.32 \times 0.57 = 0.182$. The OBR pairs it with an automatable fraction of 0.33 and an exposure share of 0.40, neither of which I adopt.
+
+The automatable fraction is $\pi_k = \pi = 0.23$ for every occupation, the share of exposed tasks Acemoglu judges profitably automatable over the decade, taken from Svanberg et al.'s computer-vision estimates. Because $\pi_k$ does not vary across $k$, \cref{cor:functionals} applies and the regional differential inherits the cancellation of \cref{prop:cancellation} exactly, while the levels are proportional to $\pi$ and carry its full model dependence. The reported levels (2.36\% for rUK, 2.33\% for Scotland) sit above Acemoglu's 0.71\% national figure because my continuous index is broader than his roughly 20\% task-exposure measure, which is a further reason why I place no weight on the levels.
+
+\subsection{The elasticity of NSND revenue to earnings}\label{app:elasticity}
+
+The third step of \cref{sec:fiscal} needs the proportional change in Scottish NSND revenue produced by a permanent proportional change in earnings. I could locate no Scotland-specific figure, but since the object is a standard one, I follow the UK approach of \citet{creedy2004} to acquire the revenue elasticity of a progressive income tax. 
+%The elasticity is a property of the schedule at a point in time rather than a parameter estimated from a time series.
+
+If every taxpayer's income rises by the fraction $\delta$ and the thresholds do not move, taxpayer $i$'s liability rises by $m_i y_i \delta$, where $m_i$ is the marginal rate at $y_i$, so
+\begin{equation}\label{eq:elasticity}
+\varepsilon \;=\;
+\frac{\sum_i \omega_i\, m_i\, y_i}{\sum_i \omega_i\, T_i}
+\;=\;
+\frac{\text{income-weighted average marginal rate}}
+     {\text{average rate on total income}},
+\end{equation}
+with $\omega_i$ the APS income weight and $T_i$ the liability under the prevailing Scottish schedule, the personal allowance taper carried explicitly. 
+%Because \cref{eq:elasticity} is evaluated at the schedule as it stands, no assumption about threshold indexation is required. 
+Progressivity alone puts $\varepsilon > 1$; the frozen higher, advanced and top rate thresholds are what keep it there as earnings grow \citep{sgreadyreckoner2026}.
+
+On my pooled APS data, I find the income-weighted average marginal rate is 0.296 against an average rate on total income of 0.154, so $\varepsilon = 1.922$. Progressivity very nearly doubles the revenue consequence of a given earnings differential.
+
+That figure is high but not unusual. \citet{garcia2026} compute the same elasticity by microsimulation for 21 European income tax systems and find values between 1.7 and 2.0 in fourteen of them; \citet{price2015} report an OECD average of about 1.85. They also find that elasticities rise with the phase-out of allowances, and the Scottish personal allowance taper is exactly such a phase-out. %\citet{immervoll2005} finds weaker bracket creep for the UK, but attributes it to a schedule with few, wide bands, which is not the schedule Scotland has run since it added three further bands in 2018. I am not aware of a published UK or Scottish estimate to benchmark against directly. The Scottish Fiscal Commission forecasts income tax by growing a taxpayer-level microsimulation of the Survey of Personal Incomes and re-applying the schedule taxpayer by taxpayer, which captures fiscal drag without needing a scalar summary of it.
+
+One caveat concerns coverage. The APS records gross pay for employees only, so it excludes self-employment and pension income such that the upper end of the tail is thinner, which is where marginal rates are highest. Grossed by the income weight, the pooled data implies a liability of roughly three-fifths of the HMRC outturn per wave (\cref{tab:elasticity}; the pooled ratio of 2.46 sets four stacked waves against a single year of outturn). A fatter upper tail would raise the numerator and the denominator of \cref{eq:elasticity} together, but the marginal rate is bounded above by the top rate while the average rate is not, so the denominator would rise by proportionally more. I therefore read 1.922 as the top of a narrow range. 
+%Nothing in the elasticity turns on the grossing factor itself, since a ratio of two identically weighted sums is invariant to the scale of the weights.
+
+%Two departures from \cref{eq:elasticity} matter, and only one of them moves the number. The second is incidence. The flat pass-through of \cref{sec:fiscal} spreads the earnings differential evenly, whereas the mechanism of \cref{eq:tfp} concentrates it in exposed occupations, which are better paid and face higher marginal rates. Letting worker $i$'s earnings change in proportion to the exposure of their occupation, and normalising so the aggregate change is unchanged, gives the incidence-weighted elasticity
+%\begin{equation}\label{eq:elasticityE}
+%\varepsilon^{E} \;=\;
+%\frac{\sum_i \omega_i\, m_i\, y_i\, E_{j(i)}}
+%     {\bar{E}_y \sum_i \omega_i\, T_i},
+%\qquad
+%\bar{E}_y = \frac{\sum_i \omega_i\, y_i\, E_{j(i)}}{\sum_i \omega_i\, y_i},
+%\end{equation}
+%which exceeds $\varepsilon$ whenever exposure and the marginal rate both rise with earnings, as they do here. The correction is small: $\varepsilon^{E} = 1.974$ against $\varepsilon = 1.922$, so concentrating the earnings differential on exposed workers rather than spreading it evenly moves the fiscal figure by 2.7\%. \Cref{sec:fiscal} therefore carries the flat $\varepsilon$.
+
+\begin{table}[h]
+\centering
+\caption{Elasticity of Scottish NSND revenue to earnings}
+\label{tab:elasticity}
+\small
+\input{tables/nsnd_elasticity}
+\end{table}

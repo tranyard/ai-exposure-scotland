@@ -1,0 +1,125 @@
+\section{Proofs and Derivations}\label{app:proofs}
+
+\subsection{Common-mode cancellation (\texorpdfstring{\cref{prop:cancellation}}{Proposition 1})}
+
+\begin{proof}
+Recall the model-$M$ continuous region index
+\begin{equation}\label{eq:A1}
+\Ebar^{M}_r = \frac{1}{100} \sum_k \eta_{k,r}\, E^{M}_k , \qquad
+E^{M}_k = E^{\star}_k + b^{M}_k ,
+\end{equation}
+where $E^{\star}_k$ is the latent exposure of minor group $k$ and $b^{M}_k$ the model-$M$ bias. Substituting the second expression into the first and separating the latent and bias components,
+\begin{equation}\label{eq:A2}
+\Ebar^{M}_r = \frac{1}{100} \sum_k \eta_{k,r} E^{\star}_k + \frac{1}{100} \sum_k \eta_{k,r} b^{M}_k = \Ebar^{\star}_r + \frac{1}{100} \sum_k \eta_{k,r} b^{M}_k .
+\end{equation}
+Differencing \cref{eq:A2} across regions $r \in \{\Scot, \rUK\}$, the latent parts collapse to $\dEbar^{\star} = \Ebar^{\star}_{\Scot} - \Ebar^{\star}_{\rUK}$ and the bias parts to
+\begin{equation}\label{eq:A3}
+\dEbar^{M} - \dEbar^{\star} = \frac{1}{100} \sum_k \bigl(\eta_{k,\Scot} - \eta_{k,\rUK}\bigr) b^{M}_k = \frac{1}{100} \sum_k \Delta\eta_k\, b^{M}_k ,
+\end{equation}
+which is \cref{eq:prop1}. The key step is that the employment shares are proper weights in each region, $\sum_k \eta_{k,r} = 1$, so that the share gaps sum to zero:
+\begin{equation}\label{eq:A4}
+\sum_k \Delta\eta_k = \sum_k \eta_{k,\Scot} - \sum_k \eta_{k,\rUK} = 1 - 1 = 0 .
+\end{equation}
+Because of \cref{eq:A4}, adding or subtracting any occupation-invariant constant $\bar{b}^{M}$ inside the sum in \cref{eq:A3} leaves it unchanged:
+\begin{equation}\label{eq:A5}
+\frac{1}{100} \sum_k \Delta\eta_k\, b^{M}_k
+= \frac{1}{100} \sum_k \Delta\eta_k
+\bigl(b^{M}_k - \bar{b}^{M}\bigr)
++ \underbrace{\frac{\bar{b}^{M}}{100} \sum_k
+\Delta\eta_k}_{=\,0}
+= \frac{1}{100} \sum_k \Delta\eta_k
+\bigl(b^{M}_k - \bar{b}^{M}\bigr) .
+\end{equation}
+Taking $\bar{b}^{M}$ to be the mean model bias, \cref{eq:A5} shows the differential error to be the covariance between the cross-region share gap and the demeaned bias. Part (i) of \cref{prop:cancellation} follows on setting $b^{M}_k = b^{M}$ for all $k$, whereupon $b^{M}_k - \bar{b}^{M} = 0$ and the right-hand side vanishes; the absolute levels of \cref{eq:A2} remain contaminated by $\tfrac{1}{100}\sum_k \eta_{k,r} b^{M}$, of the order of the mean bias. Part (ii) is \cref{eq:A5} itself.
+\end{proof}
+
+\subsection{Cross-model stability (\texorpdfstring{\cref{cor:crossmodel}}{Corollary 1})}
+
+Applying \cref{eq:A3} to two models $M$ and $M'$ and differencing the two error expressions, the latent benchmark $\dEbar^{\star}$ cancels, leaving
+\begin{equation}\label{eq:A6}
+\dEbar^{M} - \dEbar^{M'}
+= \frac{1}{100} \sum_k \Delta\eta_k
+\bigl(b^{M}_k - b^{M'}_k\bigr) .
+\end{equation}
+By the same zero-sum argument of \cref{eq:A4}, \cref{eq:A6} is invariant to a common level shift in either model's bias and is therefore zero whenever the cross-model bias difference $b^{M}_k - b^{M'}_k$ is constant in $k$. More generally it is bounded, by the Cauchy--Schwarz inequality, by
+\begin{equation}\label{eq:A7}
+\bigl| \dEbar^{M} - \dEbar^{M'} \bigr|
+\;\le\;
+\frac{1}{100}\,
+\bigl\lVert \Delta\eta \bigr\rVert_2\,
+\bigl\lVert b^{M} - b^{M'} \bigr\rVert_2 ,
+\end{equation}
+so that the cross-model movement in the differential is small whenever the share gap and the bias difference are weakly aligned, even when the bias difference itself is large. This is the formal content of the claim that the differential is more stable across models than the levels, and together \cref{eq:A6,eq:A7} prove \cref{cor:crossmodel}.
+
+\subsection{Affine bias and scale-free differentials (\texorpdfstring{\cref{cor:affine}}{Corollary 2})}
+
+Suppose model $M$ is allowed three ways of being wrong at once: it may shift the origin of the scale, stretch or compress it, and on top of that mis-score individual minor groups. Formally, let $E^{M}_k = a^{M} + c^{M} E^{\star}_k + b^{M}_k$ with $c^{M} > 0$. Substituting into the region index and differencing as in \cref{eq:A2,eq:A3},
+\begin{equation}\label{eq:A6b}
+\dEbar^{M}
+= \frac{1}{100} \sum_k \Delta\eta_k \bigl( a^{M} + c^{M} E^{\star}_k + b^{M}_k \bigr)
+= \underbrace{\frac{a^{M}}{100} \sum_k \Delta\eta_k}_{=\,0}
++\; c^{M}\, \dEbar^{\star}
++ \frac{1}{100} \sum_k \Delta\eta_k\, b^{M}_k ,
+\end{equation}
+which is \cref{eq:cor2}. The intercept vanishes by \cref{eq:A4}, exactly as the mean bias does in \cref{prop:cancellation} since an affine model's additive part is a common-mode error. The slope, however, is not. It multiplies the differential, so a model that uses less of the $[0,100]$ scale returns a proportionally smaller gap in index points even where it agrees perfectly about which occupations are the exposed ones. Thus, bias $b^{M}_k$ co-varies with the exposure level and therefore, in part, with the share gap.
+
+Part (ii) follows because the transformation is applied to the score distribution, which is common to the two regions. Writing $\mathrm{SD}^{M}$ for the employment-weighted standard deviation of $\{E^{M}_k\}$ across the UK, a compression by $c^{M}$ shrinks the gap and the dispersion in the same proportion. So when $b^{M}_k \equiv 0$ we have $\mathrm{SD}^{M} = c^{M} \mathrm{SD}^{\star}$, and the two factors cancel:
+\begin{equation}\label{eq:A6c}
+\frac{\dEbar^{M}}{\mathrm{SD}^{M}}
+= \frac{c^{M} \dEbar^{\star}}{c^{M} \mathrm{SD}^{\star}}
+= \frac{\dEbar^{\star}}{\mathrm{SD}^{\star}} ,
+\end{equation}
+and neither $a^{M}$ nor $c^{M}$ survives. With $b^{M}_k \ne 0$ the standardised differential retains \\ $\bigl(\tfrac{1}{100}\sum_k \Delta\eta_k b^{M}_k\bigr) / \mathrm{SD}^{M}$, which is the non-affine residual and is what \cref{tab:crossmodelstd} measures.
+ 
+
+Part (iii) is immediate. A percentile rank depends on the scores only through their ordering. Any strictly increasing transformation, of which $E \mapsto a^{M} + c^{M} E$ with $c^{M} > 0$ is one, cannot change an ordering. The percentile differential is therefore untouched by any monotone rescaling, not just an affine one. The price is that it throws away cardinal information of the index-point gap. That is, it can say Scotland is two percentile points down, but not that the gap is twice as large as some other gap.
+ 
+%Both transformations act on the score distribution and leave the employment shares alone, so neither introduces any regional variation of its own, $\sum_k \Delta\eta_k = 0$ still holds, and the demeaning argument of \cref{eq:A5} carries over to the transformed scores unchanged.
+
+\subsection{Downstream linear functionals (\texorpdfstring{\cref{cor:functionals}}{Corollary 3})}
+
+\begin{proof}
+Recall $F^{M}_r = \sum_k \eta_{k,r}\, q_k E^{M}_k$ with coefficients $q_k \ge 0$ common
+to both regions. Substituting $E^{M}_k = E^{\star}_k + b^{M}_k$ and differencing across
+regions gives \cref{eq:cor3}. Unlike the unweighted case of \cref{eq:A4}, the weighted
+share gaps need not sum to zero: $\sum_k \Delta\eta_k q_k = \bar{Q}_{\Scot} - \bar{Q}_{\rUK}$
+with $\bar{Q}_r = \sum_k \eta_{k,r} q_k$. Under a pure level shift $b^{M}_k = b^{M}$,
+\cref{eq:cor3} therefore reduces to $b^{M} \bigl(\bar{Q}_{\Scot} - \bar{Q}_{\rUK}\bigr)$. When the coefficients are constant, $q_k = q$, the sum collapses to
+$q\, b^{M} \sum_k \Delta\eta_k = 0$ by \cref{eq:A4}, and the cancellation is exact.
+\end{proof}
+
+\noindent
+The continuous exposure gap is the special case $q_k = 1/100$; the baseline TFP differential of \cref{sec:specs} is the special case $q_k = \kappa \pi_k$ with $\pi_k = \pi$ constant across occupations.
+
+
+\subsection{Errors-in-variables attenuation}
+
+Consider the conditional wage regression \cref{eq:wage} in the single-regressor form $\ln w_i = \alpha + \beta_1 E_{j(i)} + \nu_i$, where the true continuous exposure $E_{j(i)} \in [0,1]$ is observed with classical within-model error $\tilde{E}_{j(i)} = E_{j(i)} + u_i$, $u_i \sim (0, \sigma^2_u)$ independent of $E_{j(i)}$ and $\nu_i$. The within-model scoring variance is estimated on the $[0,100]$ scale as $\widehat{\sigma}^2_{g(j)}$, which rescaling to the $[0,1]$ index gives $\sigma^2_u = \widehat{\sigma}^2_{g(j)} / 10^4$. The OLS estimator of $\beta_1$ using $\tilde{E}$ has probability limit
+\begin{equation}\label{eq:A9}
+\plim \widehat{\beta}^{\mathrm{OLS}}_1
+= \beta_1 \cdot \frac{\Var(E)}{\Var(E) + \sigma^2_u}
+= \beta_1 (1 - \lambda),
+\qquad
+\lambda \equiv \frac{\sigma^2_u}{\Var(E) + \sigma^2_u},
+\end{equation}
+the standard attenuation result for classical measurement error in a single regressor \citep[][ch.~4]{wooldridge2010}, where $\lambda$ is the reliability complement and the survey-data context is that of \citet{bound1991}.
+%\footnote{In the main text $\lambda$ is written with denominator $\Var(E_j)$; \cref{eq:A9} uses the observed-regressor variance $\Var(\tilde{E}) = \Var(E) + \sigma^2_u$, which is the directly estimable quantity. The two coincide to first order when $\sigma^2_u$ is small relative to $\Var(E)$, as it is here.} Inverting \cref{eq:A9} gives the corrected estimator
+\begin{equation}\label{eq:A10}
+\widehat{\beta}^{\mathrm{EIV}}_1
+= \frac{\widehat{\beta}^{\mathrm{OLS}}_1}{1 - \widehat{\lambda}},
+\qquad
+\widehat{\lambda}
+= \frac{\widehat{\sigma}^2_u}{\widehat{\Var}(\tilde{E})},
+\end{equation}
+with standard errors obtained by the delta method on the smooth function $(\widehat{\beta}^{\mathrm{OLS}}_1, \widehat{\lambda}) \mapsto \widehat{\beta}^{\mathrm{OLS}}_1 / (1 - \widehat{\lambda})$. The correction to the Scotland interaction $\beta_3$ in the full specification \cref{eq:wage} is treated as approximate, since the interaction regressor $E_{j(i)} \times \Scot_i$ inherits the measurement error of $E_{j(i)}$ only on the Scottish subsample and the resulting attenuation is no longer a single scalar factor.
+
+\subsection{Correlated within-family errors in the Monte Carlo}
+
+The procedure of \cref{sec:noise} draws $s^{(r)}_j \sim N(s_j, \widehat{\sigma}^2_{g(j)})$ across occupations $j$, independently under $\rho = 0$ and with an equicorrelated structure within each occupational family otherwise. Consider the contribution of a single family $g$ containing $n_g$ occupations to an employment-weighted aggregate, and let $W_g = \sum_{k \in g} \eta_{k,r}$ be the employment weight the family carries. The family's occupation-level contribution to the variance, under independent draws, is $W_g^2 \widehat{\sigma}^2_g / n_g$. Imposing $\Cov(\varepsilon_i, \varepsilon_{i'}) = \rho\,\widehat{\sigma}^2_g$ for $i \ne i'$ within the family gives
+\begin{equation}\label{eq:A11}
+\Var\bigl(\Ebar_r\bigr)
+= \sum_g \frac{W_g^2\, \widehat{\sigma}^2_g}{n_g}
+\, \underbrace{\bigl[\, 1 + (n_g - 1)\rho \,\bigr]}_{\text{design effect}} ,
+\end{equation}
+which reduces to the independent case at $\rho = 0$ and rises to $W_g^2 \widehat{\sigma}^2_g$ at $\rho = 1$, where the family moves as one. Notice, the bracket (the familiar design-effect factor) exceeds one for any $\rho > 0$, so positively correlated framing errors widen the interval relative to the independent baseline. I report the propagation across $\rho \in \{0, 0.2, 0.4\}$ and read the spread across those rows as the sensitivity of the reported uncertainty to the assumption. 
+%The same factor applies to the differential, but there it multiplies a variance that \cref{prop:cancellation} has already made small, which is why the $\rho$ rows of \cref{tab:propagation} move the scoring component visibly and the composed interval hardly at all.

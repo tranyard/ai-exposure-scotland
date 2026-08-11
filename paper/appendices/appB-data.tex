@@ -1,0 +1,86 @@
+\section{Data Construction and Coverage}\label{app:data}
+
+\subsection{Crosswalk from O*NET--SOC to UK SOC 2020}
+
+The exposure scores are indexed by O*NET--SOC occupation and the employment weights by UK SOC 2020, so the two are bridged by a published concordance that maps O*NET--SOC 2019 codes to UK SOC 2020 unit groups. I work at the three-digit minor-group level. This trades a degree of occupational resolution for sample sizes large enough to support reliable regional employment shares once survey waves are pooled, which is the binding constraint for Scotland, where finer groupings thin out quickly. The coarser working level also makes the region-invariance assumption of \cref{as:reginv} more comfortable, since averaging over a minor group smooths the fine distinctions along which any residual regional difference in task content would appear.
+
+\paragraph{Aggregation rule.} The concordance is many-to-many, so an aggregation rule is required. Each UK SOC 2020 unit group receives the mean of the scores of the O*NET occupations mapping into it, weighted by the concordance weights, and then aggregated to the three-digit minor group by unweighted mean. A consequence of the rule is that the unweighted second step gives a thinly populated unit group the same relevance as a majorly populated one. I therefore recompute the differential under two alternative rules, equal weights at both steps, and mapping-mass weights at the second step,
+%, and a direct one-step weighted mean to the minor group, 
+which \cref{tab:crosswalkrules} reports alongside the baseline. Weighting the second step by UK unit-group employment would be stronger still, but the public APS does not publish employment below the minor group.
+
+\begin{table}[h]
+\centering
+\caption{Sensitivity of the differential to the crosswalk aggregation rule}
+\label{tab:crosswalkrules}
+\small
+\input{tables/crosswalk_aggregation_sensitivity}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Continuous composite index under the maximum operator, in index points. The baseline row reproduces the headline gap of \cref{tab:headline} by construction.
+\end{minipage}
+\end{table}
+
+
+%\paragraph{Coverage.} \placeholder{share of UK employment mapping cleanly to a UK SOC 2020 minor group; number of unit groups requiring manual reconciliation, and the rule used. Printed by \texttt{02\_crosswalk.R}.}
+
+\subsection{APS pooling and sample-count diagnostics}
+
+Pooling four APS waves (2022-2025) is necessary because a single wave leaves too many Scottish minor groups with too small a sample for the employment shares to be precise, and the window is short enough that occupational structure is stable across it. 23 of the 104 pooled Scottish minor groups contain fewer than 100 respondents across the four waves, with the smallest containing 11. 
+%The first-difference employment estimates weight by employment, which contains the damage but cannot repair it, and this is why I read the first-difference specification as uninformative rather than as evidence of no differential response.
+
+%\subsection{The industry margin of the region-invariance assumption}
+ 
+\paragraph{Two design features the bootstrap does not capture.} The APS is
+assembled from overlapping Labour Force Survey waves, so a respondent can
+appear in two adjacent annual datasets. A person-level bootstrap of the pooled
+file treats those appearances as independent draws and ignores the survey's
+clustered design. Both simplifications understate the sampling variance of the
+shares, so the composed interval of \cref{tab:propagation} is not an exact
+coverage statement. The pooled window also spans the 2022--24 fall in LFS
+response rates, whose consequences for sub-national estimates the ONS has
+itself flagged. Differential non-response between Scotland and the rUK would
+shift the shares rather than widen their interval, and no bootstrap can detect
+it.
+
+\paragraph{The industry margin of region invariance.} Exposure attaches to an occupation, not to an occupation within an industry. So \cref{as:reginv} fails if exposure varies across the industries in which an occupation is employed \emph{and} Scotland's within-occupation industry mix differs from the rUK's. The APS records industry alongside occupation, so the second half of that condition is measurable. For each minor group $k$ I compute the total-variation distance between the Scottish and rUK industry distributions within the occupation,
+\begin{equation*}
+\mathrm{TV}_k = \tfrac{1}{2} \sum_i \bigl| \Pr(i \mid k, \Scot)
+- \Pr(i \mid k, \rUK) \bigr|,
+\end{equation*}
+which is the share of the occupation's employment that would have to move between industries to make the two distributions coincide.
+
+Divergence is modest. Across the 99 adequately populated minor groups the median TV is 0.14 and the ninetieth percentile 0.26 (\cref{tab:industryinvariance}). The Scotland-employment-weighted mean $B = \sum_k \sigma_{k,\Scot}\mathrm{TV}_k = 0.114$ turns this into a bound: if within-occupation exposure spans at most $\delta$ index points across industries, the error in $\dEbar$ cannot exceed $\delta B$. The design cannot observe $\delta$, so the bound is only as informative as the value one is willing to assume. A spread of five index points admits an error of 0.57 points against a gap of $-0.86$.
+
+It is ambiguous where the strain sits exactly. TV is mildly negatively correlated with the absolute gap contributions ($-0.19$), so divergence does not concentrate in the minor groups that generate the differential; but it is mildly positively correlated with exposure itself ($+0.25$). The bound depends on TV interacted with employment-share divergence rather than on exposure alone, so the second correlation does not imply bias. 
+%It does mean the reassurance from the first is not unconditional.
+%The adequate-sample threshold (thirty respondents per region) is looser than the roughly hundred-respondent standard used to flag thin samples elsewhere in this appendix, so the median, 90th-percentile, and most-divergent-group figures partly reflect sampling noise in small industry-by-occupation samples and should be read as indicative of the shape of the distribution rather than as precise per-group estimates.
+ 
+\begin{table}[h]
+\centering
+\caption{Within-occupation industry divergence and the implied bias bound}
+\label{tab:industryinvariance}
+\small
+\input{tables/industry_invariance_summary}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Computed on minor groups with at least thirty respondents in each region across the pooled 2022--2025 waves; coverage is reported as the share of Scottish employment those minor groups carry. $TV \in [0,1]$, with 0 indicating identical within-occupation industry composition on both sides of the border. The final two rows test whether the strain on \cref{as:reginv} concentrates where the gap is generated.
+\end{minipage}
+\end{table}
+
+\subsection{Full industry contributions to exposure}
+
+\begin{table}[H]
+\centering
+\caption{Industry-mix and within-industry contributions by SIC section}
+\label{tab:industrysections}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\renewcommand{\arraystretch}{0.95}
+\input{tables/industry_contributions}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} The industry names are abbreviated from the official SIC 2007 section titles.
+\end{minipage}
+\end{table}
+
+%Per-section terms summing to the totals of \cref{tab:industry}, ordering A (rUK within-industry exposure, Scottish share differences).

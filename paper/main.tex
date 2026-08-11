@@ -1,0 +1,70 @@
+% =====================================================================
+%  Scotland versus the Rest:
+%  A Fiscal Investigation into the Comparative AI Exposure of
+%  Scotland and the Rest of the UK
+%
+%  MSc Economics dissertation — SGPE Sponsored Dissertation w/ SFC
+%=====================================================================
+\documentclass[12pt,a4paper]{article}
+%TC:macro \cref [ignore]
+%TC:macro \Cref [ignore]
+%TC:macro \crefalias [ignore,ignore]
+%TC:macro \eqref [ignore]
+%TC:macro \citep [ignore]
+%TC:macro \citet [ignore]
+
+\newif\ifanonymous
+\anonymoustrue   %Set \anonymousfalse for non-diss versions.
+%\anonymousfalse
+
+\input{preamble}
+
+% ---- Metadata -------------------------------------------------------
+%\newcommand{\thetitle}{Scotland versus the Rest:\\[0.3em]
+%  \large A Fiscal Investigation into the Comparative Exposure of Artificial Intelligence in Scotland and the Rest of the UK}
+%%% SFC TITLE
+
+\newcommand{\thetitle}{Scotland versus the Rest:\\[0.3em]
+  \large Differential AI Exposure, Model
+Dependence, and the Scottish Budget}
+
+\newcommand{\examnumber}{B300063}   % TODO: your exam number
+\newcommand{\wordcount}{[TODO: word count]} % texcount output; must be 8,000-10,000
+
+\begin{document}
+
+\input{frontmatter}
+\tableofcontents
+
+\newpage
+\input{sections/01-introduction}
+\input{files/flowchart}
+\input{sections/02-background}
+\input{sections/03-data}
+\input{sections/04-methodology}
+\input{sections/05-results}
+\input{sections/06-translation}
+\input{sections/07-conclusion}
+
+\newpage
+\bibliographystyle{agsm} 
+\bibliography{references}
+
+\clearpage
+\appendix
+\crefalias{section}{appendix}
+\crefalias{subsection}{appendix}
+\renewcommand{\thetable}{A\arabic{table}}  \setcounter{table}{0}
+\input{appendices/appA-proofs}
+\input{appendices/appB-data}
+\input{appendices/appC-protocol}
+\input{appendices/appD-calibration}
+\input{appendices/appE-additional}
+\input{appendices/appF-specifications}
+%\input{appendices/appG-descriptives}
+
+
+
+\end{document}
+
+

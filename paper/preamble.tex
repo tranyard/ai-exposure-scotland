@@ -1,0 +1,94 @@
+% ---------------------------------------------------------------------
+% Preamble — standard academic economics setup
+% ---------------------------------------------------------------------
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern} 
+\usepackage[expansion=false]{microtype} 
+\usepackage[british]{babel}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\usepackage{sectsty}
+\sectionfont{\centering}
+
+
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{tcolorbox}
+\usepackage{seqsplit}
+
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{caption}
+\captionsetup{font=small,labelfont=bf}
+\usepackage{float}
+\usepackage{pdfpages}
+\usepackage{graphicx}
+
+\usepackage{natbib}          
+\setcitestyle{aysep={}}     
+
+\usepackage[hidelinks]{hyperref}
+\usepackage[capitalise,noabbrev]{cleveref}
+
+  
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,fit,backgrounds}
+
+% ---- Formal architecture --------------------------------------------
+\theoremstyle{plain}
+\newtheorem{proposition}{Proposition}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\theoremstyle{definition}
+\newtheorem{assumption}{Assumption}
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}
+
+
+% ---- Notation macros -------------------------------------------------
+\newcommand{\E}{\mathbb{E}}
+\newcommand{\Var}{\operatorname{Var}}
+\newcommand{\Cov}{\operatorname{Cov}}
+\newcommand{\plim}{\operatorname{plim}}
+\newcommand{\ind}[1]{\mathbf{1}\!\left[#1\right]}
+\newcommand{\Ebar}{\bar{E}}
+\newcommand{\Ehat}{\widehat{E}}
+\newcommand{\dEbar}{\Delta\bar{E}}
+\newcommand{\rUK}{\mathrm{rUK}}
+\newcommand{\Scot}{\mathrm{Scot}}
+
+% ---- Fiscal translation: values 
+\newcommand{\varepsilonNSND}{1.92}
+\newcommand{\revLo}{0.0071}
+\newcommand{\revCen}{0.0088}
+\newcommand{\revHi}{0.0104}
+\newcommand{\fiscLo}{1.3}            % £m p.a.
+\newcommand{\fiscCen}{1.6}
+\newcommand{\fiscHi}{1.9}
+\newcommand{\termLo}{13}             % £m, year-ten annual flow
+\newcommand{\termCen}{16}
+\newcommand{\termHi}{19}
+\newcommand{\cumLo}{73}              % £m, ten-year cumulative
+\newcommand{\cumCen}{90}
+\newcommand{\cumHi}{107}
+\newcommand{\fiscPctAnn}{one-sixth}  % of one per cent of the net position
+\newcommand{\fiscPctTerm}{1.7} % per cent of net position
+
+% ---- Fiscal error budget (sec:budget). Overwritten by 20_elasticity.R,
+%      which prints \renewcommand lines for the block below.
+\newcommand{\fiscPerPt}{1.90}        % GBP m p.a. per index point of gap
+\newcommand{\fiscNoiseLo}{1.5}       % framing noise, rho = 0.4
+\newcommand{\fiscNoiseHi}{1.8}
+\newcommand{\fiscNoisePct}{9}        % max deviation from central, %
+\newcommand{\fiscSampLo}{1.3}        % APS employment-share sampling
+\newcommand{\fiscSampHi}{2.0}
+\newcommand{\fiscMeasLo}{1.3}        % composed measurement interval
+\newcommand{\fiscMeasHi}{2.1}
+\newcommand{\fiscModelLo}{0.8}       % across the three scoring models
+\newcommand{\fiscModelHi}{1.6}
+\newcommand{\fiscModelPct}{50}       % span as % of central

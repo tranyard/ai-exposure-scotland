@@ -1,0 +1,128 @@
+\section{From Exposure to the Net Position}\label{sec:translation}
+
+To assess their fiscal implications, the exposure scores must first be mapped into productivity and then into income tax revenue. The following exercise is merely an accounting translation under stated assumptions and not a forecast. The parameters are imported, from the OBR/Acemoglu calibration in the first stage and from the block grant adjustment rules in the second, so that the Scottish and rUK paths differ only through their employment-weighted exposure. 
+%Every one of those imported parameters enters as a coefficient common to the two regions, which by \cref{cor:functionals} makes the whole chain a linear functional of the exposure index. Two things follow, and they organise the section. 
+\cref{prop:cancellation} survives to the net position, and the uncertainty in the fiscal figure can be appraised by rescaling the intervals already estimated in \cref{sec:interval}. 
+%\Cref{sec:budget} does that pricing and reads off which source governs the magnitude; the answer is what licenses the emphasis on fiscal direction and persistence over magnitude that runs through what follows.
+
+\subsection{Implications for projected productivity}\label{sec:productivity}
+
+The projection converts the exposure gap into the units a fiscal claim has to be made in. Since the baseline projection is a linear functional of the scores with region-common coefficients, by \cref{cor:functionals} its regional differential inherits the \cref{prop:cancellation} cancellation, so the differential is proportional to $\dEbar$ by construction. 
+%What the projection adds is not information but a second decision, absent from the exposure measurement itself, about which functional of the scores stands in for Acemoglu's share of exposed tasks (\cref{sec:calibration}).
+
+Under the central adoption scenario the composite index implies a cumulative ten-year TFP contribution of 2.362\% for rUK against 2.331\% for Scotland, a differential of $-0.031$ percentage points (\cref{tab:projection}). Moving the average cost saving on an exposed task, $\kappa$, across its low and high settings respectively changes the differential to $-0.025$ and $-0.036$ points. The complementarity projection gives $-0.034$ percentage points and the substitution projection $-0.013$, falling either side of the projection from the composite gap.
+
+Now, equation \eqref{eq:tfp} asks for the share of an occupation's task content that is exposed, and I use the continuous index $\Ebar_k$ in its place. $\Ebar_k$ is an importance-weighted mean amenability rating, whereas the framework wants an importance-weighted share of task content above a threshold. Panel~C therefore repeats the central projection on the latter, $\mathrm{Sub}_k + \mathrm{Comp}_k$, for each of the three threshold pairs. 
+The differential holds its sign throughout, ranging from $-0.023$ to $-0.054$ points, so regardless of functional used, Scotland's projected productivity gain from AI adoption falls short of rUK's.
+
+%Neither functional licenses a reading of the levels. Both put a far larger fraction of task content in the exposed category than the roughly 20\% Acemoglu takes from \citet{eloundou2024}, so both inflate the projected path relative to his 0.71\% national figure by roughly the ratio of the two exposure measures. That inflation is common to the two regions and cancels from the differential by \cref{cor:functionals}.
+
+\begin{table}[t]
+\centering
+\caption{Projected ten-year TFP contribution and the Scotland--rUK differential}
+\label{tab:projection}
+\small
+\begin{tabular}{lcccc}
+\toprule
+ & $\kappa$ & rUK & Scotland & Differential \\
+\midrule
+\multicolumn{5}{l}{\textit{Panel A. Composite exposure index, by cost-saving scenario}} \\
+Low     & 0.124 & 1.902 & 1.877 & $-0.025$ \\
+Central & 0.154 & 2.362 & 2.331 & $-0.031$ \\
+High    & 0.182 & 2.792 & 2.755 & $-0.036$ \\
+\addlinespace
+\multicolumn{5}{l}{\textit{Panel B. Single-channel projections, central scenario}} \\
+Complementarity only & 0.154 & 2.255 & 2.221 & $-0.034$ \\
+Substitution only    & 0.154 & 1.369 & 1.356 & $-0.013$ \\
+\addlinespace
+\multicolumn{5}{l}{\textit{Panel C. Exposed task-content share $\mathrm{Sub}_k + \mathrm{Comp}_k$, central scenario}} \\
+Thresholds $(60,30)$ & 0.154 & 3.240 & 3.218 & $-0.023$ \\
+Thresholds $(70,40)$ & 0.154 & 2.953 & 2.911 & $-0.042$ \\
+Thresholds $(80,50)$ & 0.154 & 2.725 & 2.671 & $-0.054$ \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.86\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Cumulative contribution to total factor productivity over the ten-year horizon, in per cent; the differential is Scotland minus rUK in percentage points. Panel B rows are alternative projections run on the two channel indices. Panel C replaces $\Ebar_k$ with the importance-weighted share of task content classified as exposed. The band carried into \cref{tab:fiscal} is the Panel~A range.
+\end{minipage}
+\end{table}
+
+
+\subsection{Fiscal translation}\label{sec:fiscal}
+
+The second stage carries the projection into the income tax net position.
+
+Translating the TFP differential into a budgetary effect requires a sequence of accounting links. Equation \eqref{eq:tfp} delivers a path for total factor productivity, whereas earnings track output per hour. Under constant returns with a capital share of one third, a permanent one per cent increase in TFP therefore raises output per hour by $1/(1-\alpha)=1.5$ per cent once the capital stock has adjusted \citep{obr2025}. As standard in the literature, I then assume full long-run pass-through from labour productivity to real earnings, which, spread evenly across the horizon, implies about $-0.0046$ percentage points of annual earnings growth for the central setting.
+The earnings differential is then translated into tax revenue. With a progressive income tax schedule, the elasticity of non-savings, non-dividend (NSND) revenue with respect to earnings exceeds one. A permanent increase in earnings raises revenue more than proportionately in line with the ratio of the income-weighted average marginal tax rate to the average tax rate on total income --- frozen higher, advanced and top-rate thresholds keep that ratio above one \citep{sgreadyreckoner2026}. I estimate on the APS earnings distribution under the prevailing Scottish schedule, the elasticity to be $\varepsilonNSND$, which sits towards the upper end of the 1.7--2.0 range reported by international studies of progressive income tax systems (\cref{app:elasticity}). 
+%Allowing the earnings differential to vary with occupational exposure rather than applying it uniformly raises the estimate only slightly, to 1.974.
+The final link is the block grant adjustment, which is indexed on a per-capita basis to rUK revenue growth, such that the net position responds to the Scotland--rUK differential in per-capita revenue growth \citep{gov2023}. This removes the component of the shock common to the two regions and so the differential, which carries the Scottish schedule and the Scottish base. Thus, only 1.92 enters, applied to Scottish NSND revenue of \pounds18.6 billion in 2024--25 \citep{hmrcoutturn2025}. 
+%The rUK elasticity would enter only through the residual left where the two bases fail to cancel, which I set to zero.
+
+
+\begin{table}[t]
+\centering
+\caption{Translation of the exposure differential into the income tax net position}
+\label{tab:fiscal}
+\small
+\begin{tabular}{lccc}
+\toprule
+ & Low & Central & High \\
+\midrule
+TFP differential (pp, 10-year cumulative) &
+  $-0.025$ & $-0.031$ & $-0.036$ \\
+Labour productivity differential (pp, 10-year cumulative) &
+  $-0.037$ & $-0.046$ & $-0.054$ \\
+Implied earnings growth differential (pp p.a.) &
+  $-0.0037$ & $-0.0046$ & $-0.0054$ \\
+Implied NSND revenue growth differential (pp p.a.) &
+  $-\revLo$ & $-\revCen$ & $-\revHi$ \\
+Net position sensitivity (\pounds m p.a.) &
+  $-\fiscLo$ & $-\fiscCen$ & $-\fiscHi$ \\
+Memo: terminal annual effect, year ten (\pounds m) &
+  $-\termLo$ & $-\termCen$ & $-\termHi$ \\
+Memo: cumulative effect over the ten years (\pounds m) &
+  $-\cumLo$ & $-\cumCen$ & $-\cumHi$ \\
+Memo: forecast net position 2026--27 (\pounds m) &
+  \multicolumn{3}{c}{969} \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} The top row is the composite ten-year Scotland--rUK differential of \cref{tab:projection}, Panel~A. The revenue base is Scottish NSND revenue of approximately \pounds18.6 billion in 2024--25 \citep{hmrcoutturn2025} and the memo net position is the SFC January 2026 forecast for 2026--27 \citep{sfc2026}. Population growth differential is omitted throughout.
+\end{minipage}
+\end{table}
+
+Together, this sequence gives a net-position sensitivity of about $-\pounds\fiscCen$ million a year at the centre, and $-\pounds\fiscLo$ to $-\pounds\fiscHi$ million across the cost-saving band (\cref{tab:fiscal}). 
+%What makes a figure of that size worth reporting is its structure rather than its annual magnitude. 
+Scottish income tax outturn is reconciled against forecast three years after the event, and the reconciliation is applied to the budget in the year it lands \citep{gov2023}. A differential driven by occupational structure is persistent, so it enters each year's forecast, is carried into that year's reconciliation, and is applied \textit{ex post} against a budget already set three years earlier. Ultimately the level effect accumulates even if the annual increment does not grow, which is why the ten-year cumulative figure in \cref{tab:fiscal} is far larger than any single year's, and why it arrives with a three-year lag. The terminal annual effect, in a decade, is \pounds\termCen\ million (about \fiscPctTerm\ per cent of next year's forecast position).
+
+Despite the small magnitude, I carry the noise from the differential through to the fiscal effect (\cref{tab:budget}).
+%Every step from $\dEbar$ to the net position multiplies by a constant common to the two regions, so the chain reduces to a single scalar, and an interval on the gap rescales directly into an interval on the net position. \Cref{tab:budget} reports the sources.
+Framing noise is the smallest source at \fiscNoisePct~per cent either side of the centre, because both regions receive the same perturbed score vector and \cref{prop:cancellation} removes almost all of it. Sampling and the adoption scenario are comparable at around two-fifths each, so variation from importing calibration numbers is similar to that arising from the data. Choice of scoring model is the most significant at \fiscModelPct~per cent, and due to being systematic it cannot be shrunk \citep{yin2026}. 
+%By \cref{cor:affine} it enters as a compression of the scale, moving the pound figure while leaving the sign and the percentile gap intact. 
+
+Across every source the sensitivity stays between \pounds0.8 and \pounds2.1 million a year, at most a fifth of one per cent of the SFC's forecast net position of \pounds969 million for 2026--27 \citep{sfc2026}, and well inside forecast-error ranges running to the hundreds of millions. Clearly, AI exposure is not a material differentiator in next year's forecast, but the direction and persistence of the differential remain relevant in a system that reconciles forecasts three years in arrears. 
+%That these survive where the magnitude does not is the point the paper opened with: the block grant adjustment differences away what is common to the two regions, and so does the exposure index.
+Additionally, in another application where magnitude is non-trivial, there may be sources of uncertainty, 
+chiefly the choice of LLM, that can have a significant impact on the figures that institutions lean on.
+
+%That last row is where \cref{cor:affine} pays off in fiscal units. The cross-model movement is a compression of the scale rather than a reordering, so the pound figure inherits $c^{M}$ in full while the percentile gap moves only from $-1.97$ to between $-1.76$ and $-2.01$. The exercise can therefore support the direction, the persistence, and an order of magnitude of a million pounds a year rather than a hundred million; it cannot support the central figure to the precision its own arithmetic implies. Reporting \pounds\fiscCen~million alone would lend the magnitude a confidence that belongs only to the sign.
+
+%Set against the SFC's forecast net position of \pounds969 million for 2026--27 \citep{sfc2026}, the central sensitivity is around \fiscPctAnn\ of one per cent, and well inside the SFC's income tax forecast-error ranges, which run to the hundreds of millions. 
+%Two readings of that comparison are available and only one of them is right.  Clearly, AI exposure is not a material differentiator in next year's forecast, but the direction and persistence of the differential remain relevant in a system that reconciles forecasts three years in arrears.
+
+\begin{table}[t]
+\centering
+\caption{Error in the annual net-position sensitivity}
+\label{tab:budget}
+\small
+\begin{tabular}{lccc}
+\toprule
+Source of uncertainty & Gap (index points) & \pounds m p.a. & Span (\% of central) \\ \midrule Framing noise, $\rho = 0.4$        & $-0.94$ to $-0.79$ & 1.50 to 1.78 & 17 \\ Adoption scenario ($\kappa$ band)  & \textit{held at} $-0.86$ & 1.31 to 1.93 & 38 \\ APS employment-share sampling      & $-1.07$ to $-0.69$ & 1.31 to 2.03 & 44 \\ Composed measurement interval      & $-1.09$ to $-0.68$ & 1.28 to 2.07 & 48 \\ Choice of scoring model            & $-0.86$ to $-0.43$ & 0.82 to 1.63 & 50 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{0.92\textwidth}
+\vspace{0.4em}\footnotesize
+\textit{Notes:} Each row carries a range on the exposure differential through the chain of \cref{tab:fiscal} against a central figure of \pounds\fiscCen~million.
+\end{minipage}
+\end{table}

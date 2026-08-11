@@ -1,0 +1,121 @@
+% =====================================================================
+%  Insert with:  \input{figures/procedure_flowchart}
+
+
+\definecolor{scotblue}  {HTML}{0072B2}
+\definecolor{lanecommon}{HTML}{F2F2F2}
+\definecolor{laneregion}{HTML}{E4EFF8}
+\definecolor{keyfill}   {HTML}{FCEFD8}
+\definecolor{keyline}   {HTML}{C8862B}
+
+\begin{figure}[p]
+\centering
+\begin{tikzpicture}[
+  font=\footnotesize,
+  node distance=6mm and 10mm,
+  stage/.style={draw=gray!60, rounded corners=2pt, fill=white,
+                text width=44mm, align=center, inner sep=4pt, minimum height=10mm},
+  io/.style={stage, fill=gray!10},
+  region/.style={stage, draw=scotblue!70, text width=42mm},
+  key/.style={stage, draw=keyline, line width=0.7pt, fill=keyfill},
+  rob/.style={draw=gray!55, rounded corners=2pt, fill=white,
+              text width=42mm, align=left, inner sep=5pt},
+  lane/.style={rounded corners=4pt, inner sep=6mm},
+  flow/.style={-{Latex[length=2mm]}, gray!75, thick},
+  probe/.style={flow, dashed, gray!60},
+  link/.style={gray!75, thick},
+  lanetitle/.style={font=\scriptsize\bfseries, text=gray!55},
+]
+
+% ---- Lane A: the scores, common to both regions ------------------------
+\node[io] (a1) {O*NET task statements\\ $+$ importance weights $\omega_{j,t}$};
+\node[stage, below=of a1] (a2)
+  {LLM task scoring\\
+   $\rightarrow\ s^{\mathrm{sub}}_{j,t},\ s^{\mathrm{comp}}_{j,t}$};
+\node[stage, below=of a2] (a3)
+  {Occupation score $E_j$\\ \emph{importance-weighted}};
+\node[stage, below=of a3] (a4)
+  {Crosswalk to UK SOC 2020\\ \emph{three-digit minor group}};
+\node[stage, below=of a4] (a5)
+  {Classification\\ Sub / Comp / Unexposed};
+
+% ---- Lane B: the weights, the only regional input ----------------------
+\node[region, right=32mm of a1] (b1)
+  {APS 2022--2025 pooled\\ employment, SOC $\times$ region};
+\node[region, below=of b1] (b2)
+  {Regional shares\\ $\eta_{k,\mathrm{Scot}},\ \eta_{k,\mathrm{rUK}}$};
+
+% ---- Robustness sidebar -------------------------------------------------
+\node[rob, below=14mm of b2.south, anchor=north] (c)
+  {\textbf{Robustness and uncertainty}\\[3pt]
+   $\bullet$\ Prop.~1: additive model bias cancels\\
+   $\bullet$\ Cor.~2: rescaling corrected by standardisation\\
+   %\phantom{$\bullet$\ }standardisation\\
+   $\bullet$\ Cor.~3: cancellation reaches downstream\\
+   %\phantom{$\bullet$\ }net position\\
+   $\bullet$\ Calibration V0--V3 $\Rightarrow\widehat\sigma^2_g$\\
+   $\bullet$\ Monte Carlo $+$ APS bootstrap $\Rightarrow$ 95\% CI\\
+   $\bullet$\ Cross-model re-scores};
+   %\phantom{$\bullet$\ }threshold and crosswalk checks};
+
+% ---- Merge --------------------------------------------------------------
+\node[stage, below=14mm of a5, xshift=16mm, text width=56mm] (m)
+  {Regional indices $\Ehat_r,\ \Ebar_r$\\
+   gap $\dEbar=\Ebar_{\Scot}-\Ebar_{\rUK}$};
+\node[key, below=of m, text width=56mm] (d)
+  {Shift--share decomposition\\
+   within-occupation term $\equiv 0$\\
+   $\Rightarrow$ the gap is \emph{purely compositional}};
+
+% ---- Downstream ---------------------------------------------------------
+% Two branches, placed symmetrically about the centre of (d).
+\node[stage, below=10mm of d, xshift=-23mm, text width=36mm] (e1)
+  {TFP projection\\ \emph{Acemoglu/OBR $\kappa$ band}};
+\node[stage, below=10mm of d, xshift=23mm,  text width=36mm] (e2)
+  {Wage gradients\\ \emph{worker-level EIV check}};
+
+\node[stage, below=8mm of e1, xshift=23mm, text width=88mm] (o)
+  {\textbf{Fiscal translation}\ \ $\Delta\mathrm{TFP}\rightarrow$ labour productivity
+   $\rightarrow$ earnings $\rightarrow$ NSND revenue $\rightarrow$ net position};
+
+\node[key, below=6mm of o, text width=88mm] (p)
+  {\textbf{Error in fiscal estimates}\ \ scoring model $>$ APS sampling $\approx\kappa$ band
+   $>$ framing noise};
+
+% ---- Arrows -------------------------------------------------------------
+\draw[flow] (a1)--(a2);
+\draw[flow] (a2)--(a3);
+\draw[flow] (a3)--(a4);
+\draw[flow] (a4)--(a5);
+\draw[flow] (b1)--(b2);
+
+\draw[flow] (a5.south) |- ([yshift=7mm]m.north) -- (m.north);
+\draw[flow] (b2.south) -- ++(0,-4mm) -| ([xshift=18mm]m.north);
+
+\draw[flow] (m)--(d);
+\draw[flow] (d.south) -- ++(0,-5mm) -| (e1.north);
+\draw[flow] (d.south) -- ++(0,-5mm) -| (e2.north);
+\coordinate (emid) at (e1.south -| d);
+\coordinate (j) at ([yshift=-4mm]emid);
+\draw[link] (e1.south) |- (j);
+\draw[link] (e2.south) |- (j);
+\draw[flow] (j) -- (o.north);
+\draw[flow] (o) -- (p);
+
+\draw[probe] (c.west) -- (m.east);
+\draw[probe] (c.south) -- ++(0,-4mm) |- (d.east);
+
+% ---- Swimlane backgrounds ----------------------------------------------
+\begin{scope}[on background layer]
+  \node[lane, fill=lanecommon, fit=(a1)(a5)] (laneA) {};
+  \node[lane, fill=laneregion, fit=(b1)(b2)] (laneB) {};
+\end{scope}
+\node[lanetitle, above=0.5mm of laneA.north]
+  {SCORES \textemdash\ identical in both regions};
+\node[lanetitle, above=0.5mm of laneB.north, text=scotblue!60]
+  {WEIGHTS \textemdash\ the only regional input};
+
+\end{tikzpicture}
+\caption{The empirical procedure, from task scores to the income tax net position.}
+\label{fig:procedure}
+\end{figure}
